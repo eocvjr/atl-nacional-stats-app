@@ -1,0 +1,188 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Calendario histórico - Atlético Nacional</title>
+  <style>
+    body{
+      margin:0;
+      font-family:Arial, sans-serif;
+      background:#06110c;
+      color:#eaf7ef;
+      padding:32px;
+    }
+
+    .container{
+      max-width:1400px;
+      margin:0 auto;
+    }
+
+    h1{
+      margin:0 0 8px;
+      font-size:52px;
+      font-weight:800;
+    }
+
+    .subtitle{
+      color:#9fb3a7;
+      margin-bottom:28px;
+      font-size:22px;
+    }
+
+    .top-link{
+      display:inline-block;
+      margin-bottom:20px;
+      color:#7df0b1;
+      text-decoration:none;
+      font-size:15px;
+    }
+
+    .match-list{
+      display:grid;
+      grid-template-columns:repeat(2, minmax(0, 1fr));
+      gap:22px;
+    }
+
+    .match-card{
+      background:linear-gradient(180deg, rgba(255,255,255,0.03), rgba(0,0,0,0.55));
+      border:1px solid rgba(255,255,255,0.08);
+      border-radius:24px;
+      padding:22px 24px;
+      box-shadow:0 16px 40px rgba(0,0,0,0.35);
+    }
+
+    .match-top{
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      gap:16px;
+      margin-bottom:18px;
+      color:#a7b7ad;
+      font-size:14px;
+      flex-wrap:wrap;
+    }
+
+    .match-main{
+      display:flex;
+      flex-direction:column;
+      align-items:center;
+      gap:18px;
+      text-align:center;
+    }
+
+    .teams-row{
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      gap:14px;
+      flex-wrap:wrap;
+    }
+
+    .team-name{
+      font-size:28px;
+      font-weight:800;
+      color:#f3fbf6;
+      line-height:1.2;
+    }
+
+    .vs{
+      font-size:13px;
+      color:#95a59a;
+      text-transform:uppercase;
+      letter-spacing:.08em;
+    }
+
+    .score{
+      padding:10px 20px;
+      border-radius:999px;
+      min-width:92px;
+      text-align:center;
+      font-weight:800;
+      font-size:30px;
+      line-height:1;
+    }
+
+    .score-win{
+      background:rgba(0,194,106,0.16);
+      color:#09a863;
+    }
+
+    .score-draw{
+      background:rgba(255,255,255,0.10);
+      color:#8f949ecb;
+    }
+
+    .score-loss{
+      background:rgba(255,76,76,0.16);
+      color:#ba0a0a;
+    }
+
+    .empty{
+      color:#9fb3a7;
+      padding:20px 0;
+      font-size:18px;
+    }
+
+    @media (max-width: 900px){
+      body{
+        padding:20px;
+      }
+
+      .match-list{
+        grid-template-columns:1fr;
+      }
+
+      h1{
+        font-size:38px;
+      }
+
+      .subtitle{
+        font-size:18px;
+      }
+
+      .team-name{
+        font-size:22px;
+      }
+
+      .score{
+        font-size:24px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <a class="top-link" href="/">← Volver al dashboard</a>
+    <h1>Calendario</h1>
+    <div class="subtitle">Partidos Liga BetPlay 2026-1</div>
+
+    {% if matches %}
+      <div class="match-list">
+        {% for match in matches %}
+          <div class="match-card">
+            <div class="match-top">
+              <div>{{ match.date }} · {{ match.time }}</div>
+              <div>{{ match.tournament_name }}</div>
+            </div>
+
+            <div class="match-main">
+              <div class="teams-row">
+                <div class="team-name">{{ match.home_team }}</div>
+                <div class="vs">vs</div>
+                <div class="team-name">{{ match.away_team }}</div>
+              </div>
+
+              <div class="score {{ match.result_class }}">
+                {{ match.home_score }} : {{ match.away_score }}
+              </div>
+            </div>
+          </div>
+        {% endfor %}
+      </div>
+    {% else %}
+      <div class="empty">No hay partidos guardados en el cache.</div>
+    {% endif %}
+  </div>
+</body>
+</html>

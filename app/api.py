@@ -129,6 +129,7 @@ def get_match_info(event_id):
             "tournament_name": "Dato no disponible",
             "country_name": "Dato no disponible",
             "season_name": "Dato no disponible",
+            "stadium": None,
         }
 
     event = data.get("event", {})
@@ -138,6 +139,13 @@ def get_match_info(event_id):
 
     home_score = event.get("homeScore", {}).get("current")
     away_score = event.get("awayScore", {}).get("current")
+
+    venue = event.get("venue", {}) or {}
+    stadium = (
+        venue.get("name")
+        or venue.get("stadium", {}).get("name")
+        or event.get("ground", {}).get("name")
+    )
 
     return {
         "home_team": event.get("homeTeam", {}).get("name"),
@@ -151,8 +159,8 @@ def get_match_info(event_id):
         "tournament_name": unique_tournament.get("name"),
         "country_name": tournament.get("category", {}).get("name"),
         "season_name": season.get("name"),
+        "stadium": stadium,
     }
-
 
 def get_table(tournament_id, season_id):
     url = f"{BASE}/api/v1/unique-tournament/{tournament_id}/season/{season_id}/standings/total"
@@ -617,14 +625,22 @@ def get_next_match(team_id=TEAM_ID):
 
     match_date, match_time = format_timestamp(next_event.get("startTimestamp"))
 
+    event_id = next_event.get("id")
+    stadium = None
+
+    if event_id:
+        match_info = get_match_info(event_id)
+        stadium = match_info.get("stadium")
+
     return {
-        "event_id": next_event.get("id"),
+        "event_id": event_id,
         "home_team": home_team.get("name"),
         "away_team": away_team.get("name"),
         "home_position": positions.get("home_position"),
         "away_position": positions.get("away_position"),
         "opponent": opponent,
         "venue_label": venue_label,
+        "stadium": stadium,
         "tournament_name": unique_tournament.get("name"),
         "country_name": tournament.get("category", {}).get("name"),
         "season_name": season.get("name"),
@@ -632,7 +648,6 @@ def get_next_match(team_id=TEAM_ID):
         "time": match_time,
         "status": next_event.get("status", {}).get("description"),
     }
-
 
 def get_full_match_center(event_id, tournament_id, season_id):
     match_info = get_match_info(event_id)
