@@ -49,7 +49,6 @@ def get_scheduled_events_today():
 
 # Known remaining Liga BetPlay 2026-I fixture dates for Nacional
 NACIONAL_FIXTURE_DATES = [
-    "2026-04-11",  # Fecha 16 - Medellín vs Nacional (clásico paisa)
     "2026-04-20",  # Fecha 17 - Nacional vs Bucaramanga
     "2026-04-25",  # Fecha 18 - Pereira vs Nacional
     # Fecha 19 (Once Caldas vs Nacional) - date TBD, add when confirmed

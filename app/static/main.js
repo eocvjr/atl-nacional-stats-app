@@ -149,9 +149,9 @@ function renderPrevious(matches){
     cont.appendChild(div);
   });
 
-  const wins   = last5.filter(m => m.home_score >  m.away_score).length;
-  const draws  = last5.filter(m => m.home_score === m.away_score).length;
-  const losses = last5.filter(m => m.home_score <  m.away_score).length;
+const wins   = last5.filter(m => classifyResult(m) === 'win').length;
+const draws  = last5.filter(m => classifyResult(m) === 'draw').length;
+const losses = last5.filter(m => classifyResult(m) === 'loss').length;
 
   formEl.textContent = `${wins} G · ${draws} E · ${losses} P (últimos ${last5.length})`;
 }

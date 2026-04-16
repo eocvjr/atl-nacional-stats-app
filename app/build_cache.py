@@ -1,5 +1,9 @@
 import json
 import time
+import os
+
+CACHE_PATH = os.path.join(os.path.dirname(__file__), "cache.json")
+
 from datetime import date
 from api import (
     TEAM_ID,
@@ -25,7 +29,8 @@ PAST_FIXTURE_DATES = [
     "2026-03-29",
     "2026-04-01",
     "2026-04-06",
-]
+    "2026-04-11",
+    ]
 
 def find_nacional_match_on_date(match_date, team_id=TEAM_ID):
     url = f"{BASE}/api/v1/sport/football/scheduled-events/{match_date}"
@@ -38,8 +43,22 @@ def find_nacional_match_on_date(match_date, team_id=TEAM_ID):
     for event in data.get("events", []):
         home_id = event.get("homeTeam", {}).get("id")
         away_id = event.get("awayTeam", {}).get("id")
+        status_type = event.get("status", {}).get("type")
+
         if home_id == team_id or away_id == team_id:
-            return event
+            print(
+                match_date,
+                event.get("homeTeam", {}).get("name"),
+                "vs",
+                event.get("awayTeam", {}).get("name"),
+                "| status.type =",
+                status_type,
+                "| status.description =",
+                event.get("status", {}).get("description")
+            )
+
+            if status_type not in ("notstarted", "canceled"):
+                return event
 
     return None
 
@@ -83,11 +102,13 @@ def build_cache():
         print(f"Done: {match_data['match_info']['home_team']} vs {match_data['match_info']['away_team']}")
         time.sleep(2)  # be gentle with the API
 
-    with open("cache.json", "w", encoding="utf-8") as f:
+    with open(CACHE_PATH, "w", encoding="utf-8") as f:
         json.dump(cache, f, ensure_ascii=False, indent=2)
 
     print(f"\nCache built successfully with {len(cache['matches'])} matches.")
-
+    print("WROTE CACHE TO:", CACHE_PATH)
+    print("FILE EXISTS:", os.path.exists(CACHE_PATH))
+    print("FILE SIZE:", os.path.getsize(CACHE_PATH)) 
 
 if __name__ == "__main__":
     build_cache()

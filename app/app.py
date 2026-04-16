@@ -29,6 +29,7 @@ def get_cached_matches():
         away_team = info.get("away_team")
         home_score = info.get("home_score")
         away_score = info.get("away_score")
+        start_time = info.get("start_time")
 
         result_class = "score-draw"
 
@@ -54,12 +55,45 @@ def get_cached_matches():
             "away_score": away_score,
             "tournament_name": info.get("tournament_name"),
             "status": info.get("status"),
+            "start_time": start_time,
             "result_class": result_class,
         })
 
-    out.sort(key=lambda x: x["event_id"], reverse=True)
+    out.sort(key=lambda x: x.get("start_time") or 0, reverse=True)
     return out
 
+
+@app.route("/api/last-match-detail")
+def last_match_detail():
+    cache = load_cache()
+    if not cache.get("matches"):
+        return jsonify({})
+
+    last = sorted(
+        cache["matches"],
+        key=lambda x: x.get("match_info", {}).get("start_time") or 0,
+        reverse=True
+    )[0]
+    return jsonify(last)
+
+def get_cached_match_by_event_id(event_id):
+    cache = load_cache()
+    for match in cache.get("matches", []):
+        if str(match.get("event_id")) == str(event_id):
+            return match
+    return None
+
+@app.route("/match/<int:event_id>")
+def match_detail(event_id):
+    return render_template("match_detail.html", event_id=event_id)
+
+@app.route("/api/match/<int:event_id>")
+def match_detail_api(event_id):
+    cache = load_cache()
+    match = next((m for m in cache["matches"] if m["event_id"] == event_id), None)
+    if not match:
+        return jsonify({"error": "not found"}), 404
+    return jsonify(match)
 
 @app.route("/")
 def index():
@@ -76,45 +110,10 @@ def next_match_route():
 def previous_matches_route():
     return jsonify(get_cached_matches())
 
-@app.route("/api/last-match-detail")
-def last_match_detail():
-    cache = load_cache()
-    if not cache.get("matches"):
-        return jsonify({})
-    last = sorted(cache["matches"], key=lambda x: x["event_id"], reverse=True)[0]
-    return jsonify(last)
-
 @app.route("/calendario")
 def calendario():
-    cache = load_cache()
-    matches = []
-    for m in cache.get("matches", []):
-        info = m["match_info"]
-        is_home = info["home_team"] == "Atlético Nacional"
-        nac_score = info["home_score"] if is_home else info["away_score"]
-        riv_score = info["away_score"] if is_home else info["home_score"]
-        
-        if nac_score > riv_score:
-            result_class = "score-win"
-        elif nac_score < riv_score:
-            result_class = "score-loss"
-        else:
-            result_class = "score-draw"
-
-        matches.append({
-            "date": m["date"],
-            "time": m["time"],
-            "home_team": info["home_team"],
-            "away_team": info["away_team"],
-            "home_score": info["home_score"],
-            "away_score": info["away_score"],
-            "tournament_name": info["tournament_name"],
-            "result_class": result_class,
-        })
-
-    matches.sort(key=lambda x: datetime.strptime(x["date"], "%d/%m/%Y"), reverse=True)
+    matches = get_cached_matches()
     return render_template("calendario.html", matches=matches)
-
 
 @app.route("/api/calendario")
 def calendario_api():
@@ -133,7 +132,7 @@ def calendario_api():
             "tournament_name": info["tournament_name"],
             "status": info["status"],
         })
-    past.sort(key=lambda x: x["event_id"])
+    past.sort(key=lambda x: x["event_id"], reverse=True)
 
     upcoming = [
         {"date": "20/04/2026", "time": "20:30", "home_team": "Atlético Nacional", "away_team": "Atlético Bucaramanga", "tournament_name": "Primera A, Apertura", "status": "Not started"},

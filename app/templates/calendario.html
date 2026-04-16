@@ -124,6 +124,27 @@
       font-size:18px;
     }
 
+    .match-link{
+      text-decoration:none;
+      color:inherit;
+      display:block;
+}
+
+    .match-link:hover .match-card{
+      transform:translateY(-2px);
+      box-shadow:0 20px 46px rgba(0,0,0,0.42);
+}
+
+    .match-card{
+      background:linear-gradient(180deg, rgba(255,255,255,0.03), rgba(0,0,0,0.55));
+      border:1px solid rgba(255,255,255,0.08);
+      border-radius:24px;
+      padding:22px 24px;
+      box-shadow:0 16px 40px rgba(0,0,0,0.35);
+      transition:transform .15s ease, box-shadow .15s ease;
+      cursor:pointer;
+}
+
     @media (max-width: 900px){
       body{
         padding:20px;
@@ -158,31 +179,30 @@
     <div class="subtitle">Partidos Liga BetPlay 2026-1</div>
 
     {% if matches %}
-      <div class="match-list">
-        {% for match in matches %}
-          <div class="match-card">
-            <div class="match-top">
-              <div>{{ match.date }} · {{ match.time }}</div>
-              <div>{{ match.tournament_name }}</div>
+  <div class="match-list">
+    {% for match in matches %}
+      <a href="/match/{{ match.event_id }}" class="match-link">
+        <div class="match-card">
+          <div class="match-top">
+            <div>{{ match.date }} · {{ match.time }}</div>
+            <div>{{ match.tournament_name }}</div>
+          </div>
+
+          <div class="match-main">
+            <div class="teams-row">
+              <div class="team-name">{{ match.home_team }}</div>
+              <div class="vs">vs</div>
+              <div class="team-name">{{ match.away_team }}</div>
             </div>
 
-            <div class="match-main">
-              <div class="teams-row">
-                <div class="team-name">{{ match.home_team }}</div>
-                <div class="vs">vs</div>
-                <div class="team-name">{{ match.away_team }}</div>
-              </div>
-
-              <div class="score {{ match.result_class }}">
-                {{ match.home_score }} : {{ match.away_score }}
-              </div>
+            <div class="score {{ match.result_class }}">
+              {{ match.home_score }} : {{ match.away_score }}
             </div>
           </div>
-        {% endfor %}
-      </div>
-    {% else %}
-      <div class="empty">No hay partidos guardados en el cache.</div>
-    {% endif %}
+        </div>
+      </a>
+    {% endfor %}
   </div>
-</body>
-</html>
+{% else %}
+  <div class="empty">No hay partidos disponibles.</div>
+{% endif %}
