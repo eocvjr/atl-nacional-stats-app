@@ -90,6 +90,8 @@ function renderNextMatch(data){
 // --------- TABLE (columna izquierda, bloque inferior) ---------
 function renderTableFromFlat(flatTable, nacionalName = 'Atlético Nacional'){
   const tableBody = document.getElementById('table-body');
+  if (!tableBody) return;
+
   tableBody.innerHTML = '';
 
   if(!flatTable || !flatTable.length){
@@ -97,11 +99,11 @@ function renderTableFromFlat(flatTable, nacionalName = 'Atlético Nacional'){
     return;
   }
 
-  // Tomamos solo top 8 para que no sea muy largo
   const top = flatTable.slice(0, 8);
 
   top.forEach(row => {
-    const isNacional = row.team_name &&
+    const isNacional =
+      row.team_name &&
       row.team_name.toLowerCase().includes(nacionalName.toLowerCase());
 
     const div = document.createElement('div');
@@ -119,6 +121,7 @@ function renderTableFromFlat(flatTable, nacionalName = 'Atlético Nacional'){
       </div>
       <div class="points">${row.points}</div>
     `;
+
     tableBody.appendChild(div);
   });
 }
@@ -211,14 +214,21 @@ function renderPlayers(detail, side = 'home'){
 // --------- INIT ---------
 async function initDashboard(){
   try {
-    const [nextMatch, prevMatches, lastDetail] = await Promise.all([
-      fetchJSON(NEXT_MATCH_ENDPOINT),
-      fetchJSON(PREVIOUS_MATCHES_ENDPOINT),
-      fetchJSON(LAST_MATCH_DETAIL_ENDPOINT),
-    ]);
-
+    const nextMatch = await fetchJSON(NEXT_MATCH_ENDPOINT);
     renderNextMatch(nextMatch);
+  } catch (e) {
+    console.error('Error cargando próximo partido:', e);
+  }
+
+  try {
+    const prevMatches = await fetchJSON(PREVIOUS_MATCHES_ENDPOINT);
     renderPrevious(prevMatches);
+  } catch (e) {
+    console.error('Error cargando partidos recientes:', e);
+  }
+
+  try {
+    const lastDetail = await fetchJSON(LAST_MATCH_DETAIL_ENDPOINT);
 
     if(lastDetail && lastDetail.flat_table){
       renderTableFromFlat(lastDetail.flat_table);
@@ -226,12 +236,14 @@ async function initDashboard(){
 
     const tabHome = document.getElementById('tab-home');
     const tabAway = document.getElementById('tab-away');
+    const list = document.getElementById('player-list');
 
     if (!lastDetail || !lastDetail.match_info || !lastDetail.lineups) {
-      const list = document.getElementById('player-list');
       if (list) list.textContent = 'Sin alineaciones en este partido.';
       return;
     }
+
+    if (!tabHome || !tabAway || !list) return;
 
     const nacSide = lastDetail.match_info.away_team === 'Atlético Nacional' ? 'away' : 'home';
     const rivSide = nacSide === 'away' ? 'home' : 'away';
@@ -252,8 +264,14 @@ async function initDashboard(){
       tabHome.classList.remove('active');
       renderPlayers(lastDetail, rivSide);
     };
-  } catch(e) {
-    console.error('Error inicializando dashboard:', e);
+  } catch (e) {
+    console.error('Error cargando tabla / último partido:', e);
+
+    const tableBody = document.getElementById('table-body');
+    if (tableBody) tableBody.textContent = 'No se pudo cargar la tabla.';
+
+    const list = document.getElementById('player-list');
+    if (list) list.textContent = 'No se pudo cargar este bloque.';
   }
 }
 

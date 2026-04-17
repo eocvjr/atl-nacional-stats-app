@@ -168,6 +168,77 @@ def next_match_detail():
         "lineups": lineups,
     })
 
+@app.route("/api/tabla")
+def tabla_api():
+    cache = load_cache()
+    table = {}
+
+    for m in cache.get("matches", []):
+        info = m.get("match_info", {})
+
+        home = info.get("home_team")
+        away = info.get("away_team")
+        home_score = info.get("home_score")
+        away_score = info.get("away_score")
+
+        # Ignorar partidos sin resultado
+        if home_score is None or away_score is None:
+            continue
+
+        # Inicializar equipos
+        for team in [home, away]:
+            if team not in table:
+                table[team] = {
+                    "team": team,
+                    "played": 0,
+                    "wins": 0,
+                    "draws": 0,
+                    "losses": 0,
+                    "goals_for": 0,
+                    "goals_against": 0,
+                    "goal_difference": 0,
+                    "points": 0
+                }
+
+        # Actualizar partidos jugados
+        table[home]["played"] += 1
+        table[away]["played"] += 1
+
+        # Goles
+        table[home]["goals_for"] += home_score
+        table[home]["goals_against"] += away_score
+
+        table[away]["goals_for"] += away_score
+        table[away]["goals_against"] += home_score
+
+        # Resultado
+        if home_score > away_score:
+            table[home]["wins"] += 1
+            table[home]["points"] += 3
+            table[away]["losses"] += 1
+        elif home_score < away_score:
+            table[away]["wins"] += 1
+            table[away]["points"] += 3
+            table[home]["losses"] += 1
+        else:
+            table[home]["draws"] += 1
+            table[away]["draws"] += 1
+            table[home]["points"] += 1
+            table[away]["points"] += 1
+
+    # Diferencia de gol
+    for team in table.values():
+        team["goal_difference"] = team["goals_for"] - team["goals_against"]
+
+    # Ordenar tabla
+    sorted_table = sorted(
+        table.values(),
+        key=lambda x: (x["points"], x["goal_difference"], x["goals_for"]),
+        reverse=True
+    )
+
+    return jsonify({"table": sorted_table})
+
 @app.route("/tabla")
 def tabla():
     matches = get_cached_matches()
