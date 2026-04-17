@@ -1,6 +1,6 @@
 from flask import Flask, jsonify, render_template
 from flask_cors import CORS
-from api import get_next_match
+from .api import get_next_match
 from datetime import datetime
 import json
 import os
@@ -144,7 +144,7 @@ def calendario_api():
 
 @app.route("/api/next-match/detail")
 def next_match_detail():
-    from api import get_next_match, get_odds, get_lineups, get_main_odds_market_from_markets
+    from .api import get_next_match, get_odds, get_lineups, get_main_odds_market_from_markets
     import time
 
     next_match = get_next_match()
@@ -168,6 +168,10 @@ def next_match_detail():
         "lineups": lineups,
     })
 
+@app.route("/tabla")
+def tabla():
+    matches = get_cached_matches()
+    return render_template("tabla.html", matches=matches)
 
 if __name__ == "__main__":
     app.run(debug=True, host="0.0.0.0", port=int(os.environ.get("PORT", 5000)))

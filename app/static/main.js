@@ -34,6 +34,17 @@ function percentFromRating(r){
   return ((c - 5) / 5) * 100;            // 0–100
 }
 
+// --------- COLORES POR RATING ---------
+function getRatingColor(r){
+  const v = parseFloat(r);
+  if(isNaN(v)) return { bar: 'rgba(255,255,255,0.12)', text: '#9aa3af' };
+  if(v >= 8.0) return { bar: 'linear-gradient(90deg,#4dffab,#00c26a)', text: '#4dffab' };  // verde brillante (color original)
+  if(v >= 7.0) return { bar: 'linear-gradient(90deg,#2ecc71,#1a7a45)', text: '#2ecc71' };  // verde oscuro
+  if(v >= 6.0) return { bar: 'linear-gradient(90deg,#f1c40f,#c9a300)', text: '#f1c40f' };  // amarillo
+  if(v >= 5.0) return { bar: 'linear-gradient(90deg,#e67e22,#d96a00)', text: '#e67e22' };  // naranja
+  return             { bar: 'linear-gradient(90deg,#e74c3c,#c0392b)', text: '#e74c3c' };   // rojo
+}
+
 function renderNextMatch(data){
   const statusEl = document.getElementById('nm-status');
   const tournamentEl = document.getElementById('nm-tournament');
@@ -149,9 +160,9 @@ function renderPrevious(matches){
     cont.appendChild(div);
   });
 
-const wins   = last5.filter(m => classifyResult(m) === 'win').length;
-const draws  = last5.filter(m => classifyResult(m) === 'draw').length;
-const losses = last5.filter(m => classifyResult(m) === 'loss').length;
+  const wins   = last5.filter(m => classifyResult(m) === 'win').length;
+  const draws  = last5.filter(m => classifyResult(m) === 'draw').length;
+  const losses = last5.filter(m => classifyResult(m) === 'loss').length;
 
   formEl.textContent = `${wins} G · ${draws} E · ${losses} P (últimos ${last5.length})`;
 }
@@ -178,6 +189,7 @@ function renderPlayers(detail, side = 'home'){
   xi.forEach(p => {
     const initials = shortName(p.name);
     const pct = percentFromRating(p.rating);
+    const { bar, text } = getRatingColor(p.rating);
 
     const row = document.createElement('div');
     row.className = 'player';
@@ -189,8 +201,8 @@ function renderPlayers(detail, side = 'home'){
           <span class="role">${p.position || ''}</span>
         </div>
       </div>
-      <div class="bar"><i style="width:${pct}%;"></i></div>
-      <div class="rating-value">${p.rating ?? '-'}</div>
+      <div class="bar"><i style="width:${pct}%; background:${bar};"></i></div>
+      <div class="rating-value" style="color:${text};">${p.rating ?? '-'}</div>
     `;
     list.appendChild(row);
   });
@@ -246,3 +258,134 @@ async function initDashboard(){
 }
 
 document.addEventListener('DOMContentLoaded', initDashboard);
+
+// --------- HELPERS (iguales al main.js) ---------
+async function fetchJSON(url){
+  const res = await fetch(url);
+  if(!res.ok) throw new Error('HTTP ' + res.status + ' al llamar ' + url);
+  return res.json();
+}
+
+// Calcula diferencia de goles con signo
+function formatDG(gf, ga){
+  if(gf == null || ga == null) return '-';
+  const d = gf - ga;
+  if(d > 0) return '+' + d;
+  return String(d);
+}
+
+// Genera puntos de forma a partir de historial (si el API lo provee)
+// Acepta array de strings ['W','D','L'] o los infiere de los datos
+function formDots(form){
+  if(!form || !form.length) return '';
+  return form.slice(-5).map(r => `<div class="fd ${r}" title="${r === 'W' ? 'Victoria' : r === 'D' ? 'Empate' : 'Derrota'}"></div>`).join('');
+}
+
+// --------- RENDER CHIPS DE NACIONAL ---------
+function renderStats(row){
+  const statsRow = document.getElementById('stats-row');
+  if(!row){ statsRow.style.display = 'none'; return; }
+
+  document.getElementById('s-pos').textContent  = row.position + '°';
+  document.getElementById('s-pts').textContent  = row.points;
+  document.getElementById('s-pj').textContent   = row.played ?? '-';
+
+  const dg = formatDG(row.goals_for, row.goals_against);
+  document.getElementById('s-dg').textContent = dg;
+
+  statsRow.style.display = 'flex';
+}
+
+// --------- RENDER TABLA ---------
+function renderTable(flatTable){
+  const tableBody = document.getElementById('table-body');
+  const updatedEl = document.getElementById('table-updated');
+  tableBody.innerHTML = '';
+
+  if(!flatTable || !flatTable.length){
+    tableBody.innerHTML = '<div class="state-msg">Sin tabla disponible.</div>';
+    return;
+  }
+
+  updatedEl.textContent = `${flatTable.length} equipos · actualizado a la fecha más reciente`;
+
+  // Busca a Nacional para los chips
+  const nac = flatTable.find(r =>
+    r.team_name && r.team_name.toLowerCase().includes('atlético nacional')
+  );
+  renderStats(nac || null);
+
+  flatTable.forEach((row, i) => {
+    const isNacional = row.team_name &&
+      row.team_name.toLowerCase().includes('atlético nacional');
+
+    const pos = row.position ?? (i + 1);
+    const isTop3 = pos <= 3;
+
+    // Badge de posición
+    let posBadgeClass = 'pos-badge';
+    if(isNacional) posBadgeClass += ' nacional';
+    else if(isTop3) posBadgeClass += ' top3';
+
+    // Zona lateral (borde izquierdo por posición)
+    let zoneBorder = '';
+    if(pos <= 4)       zoneBorder = 'border-left:3px solid #00c26a;';
+    else if(pos <= 8)  zoneBorder = 'border-left:3px solid #2196f3;';
+    else if(pos >= flatTable.length - 1) zoneBorder = 'border-left:3px solid #e74c3c;';
+    else               zoneBorder = 'border-left:3px solid transparent;';
+
+    const dg = formatDG(row.goals_for, row.goals_against);
+    const dotsHtml = row.form ? formDots(row.form) : '';
+
+    const div = document.createElement('div');
+    div.className = 'team-row' + (isNacional ? ' highlight' : '');
+    div.style.cssText = zoneBorder;
+    div.style.animationDelay = (i * 30) + 'ms';
+
+    div.innerHTML = `
+      <div class="${posBadgeClass}">${pos}</div>
+
+      <div class="team-name-cell">
+        <span class="name${isNacional ? ' highlight-name' : ''}">${row.team_name}</span>
+      </div>
+
+      <div class="cell">${row.played ?? '-'}</div>
+      <div class="cell">${row.wins ?? '-'}</div>
+      <div class="cell">${row.draws ?? '-'}</div>
+      <div class="cell">${row.losses ?? '-'}</div>
+      <div class="cell hide-mobile">${dg}</div>
+      <div class="cell pts">${row.points ?? '-'}</div>
+    `;
+
+    tableBody.appendChild(div);
+  });
+}
+
+// --------- INIT ---------
+async function initTabla(){
+  try {
+    const data = await fetchJSON(LAST_MATCH_DETAIL_ENDPOINT);
+
+    if(data && data.flat_table){
+      renderTable(data.flat_table);
+    } else {
+      document.getElementById('table-body').innerHTML =
+        '<div class="state-msg">No se encontró la tabla en el endpoint.</div>';
+      document.getElementById('table-updated').textContent = 'Sin datos';
+    }
+
+    // Fecha del último partido (si viene en match_info)
+    if(data && data.match_info && data.match_info.date){
+      document.getElementById('table-date').textContent =
+        'Tras partido del ' + data.match_info.date;
+    }
+
+  } catch(e) {
+    console.error('Error cargando tabla:', e);
+    document.getElementById('table-body').innerHTML =
+      '<div class="state-msg">Error al cargar la tabla. Revisá la consola.</div>';
+    document.getElementById('table-updated').textContent = 'Error de conexión';
+  }
+}
+
+document.addEventListener('DOMContentLoaded', initTabla);
