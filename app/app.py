@@ -1,103 +1,217 @@
 from flask import Flask, jsonify, render_template
 from flask_cors import CORS
-from .api import get_next_match
-from datetime import datetime
-import json
+from .api import get_next_match, get_odds, get_lineups, get_main_odds_market_from_markets
+from .db import get_connection
 import os
+import time
 
 app = Flask(__name__, static_folder='static', template_folder='templates')
 CORS(app)
 
-CACHE_PATH = os.path.join(os.path.dirname(__file__), "cache.json")
+
+def compute_result_class(home_team, away_team, home_score, away_score):
+    result_class = "score-draw"
+
+    if home_score is not None and away_score is not None:
+        nac_is_home = home_team == "Atlético Nacional"
+        nac_score = home_score if nac_is_home else away_score
+        rival_score = away_score if nac_is_home else home_score
+
+        if nac_score > rival_score:
+            result_class = "score-win"
+        elif nac_score < rival_score:
+            result_class = "score-loss"
+
+    return result_class
 
 
-def load_cache():
-    if not os.path.exists(CACHE_PATH):
-        return {"matches": []}
-    with open(CACHE_PATH, "r", encoding="utf-8") as f:
-        return json.load(f)
+def get_previous_matches_from_db():
+    conn = get_connection()
+    cur = conn.cursor()
 
+    cur.execute("""
+        SELECT event_id, date, time, home_team, away_team, home_score, away_score,
+               tournament_name, status, start_time
+        FROM matches
+        ORDER BY start_time DESC
+    """)
+    rows = cur.fetchall()
+    conn.close()
 
-def get_cached_matches():
-    cache = load_cache()
     out = []
+    for row in rows:
+        item = dict(row)
+        item["result_class"] = compute_result_class(
+            item["home_team"],
+            item["away_team"],
+            item["home_score"],
+            item["away_score"],
+        )
+        out.append(item)
 
-    for m in cache.get("matches", []):
-        info = m.get("match_info", {})
-
-        home_team = info.get("home_team")
-        away_team = info.get("away_team")
-        home_score = info.get("home_score")
-        away_score = info.get("away_score")
-        start_time = info.get("start_time")
-
-        result_class = "score-draw"
-
-        if home_score is not None and away_score is not None:
-            nac_is_home = home_team == "Atlético Nacional"
-            nac_score = home_score if nac_is_home else away_score
-            rival_score = away_score if nac_is_home else home_score
-
-            if nac_score > rival_score:
-                result_class = "score-win"
-            elif nac_score < rival_score:
-                result_class = "score-loss"
-            else:
-                result_class = "score-draw"
-
-        out.append({
-            "event_id": m.get("event_id"),
-            "date": m.get("date"),
-            "time": m.get("time"),
-            "home_team": home_team,
-            "away_team": away_team,
-            "home_score": home_score,
-            "away_score": away_score,
-            "tournament_name": info.get("tournament_name"),
-            "status": info.get("status"),
-            "start_time": start_time,
-            "result_class": result_class,
-        })
-
-    out.sort(key=lambda x: x.get("start_time") or 0, reverse=True)
     return out
 
 
-@app.route("/api/last-match-detail")
-def last_match_detail():
-    cache = load_cache()
-    if not cache.get("matches"):
-        return jsonify({})
+def get_latest_match_detail_from_db():
+    conn = get_connection()
+    cur = conn.cursor()
 
-    last = sorted(
-        cache["matches"],
-        key=lambda x: x.get("match_info", {}).get("start_time") or 0,
-        reverse=True
-    )[0]
-    return jsonify(last)
+    cur.execute("""
+        SELECT *
+        FROM matches
+        ORDER BY start_time DESC
+        LIMIT 1
+    """)
+    match = cur.fetchone()
 
-def get_cached_match_by_event_id(event_id):
-    cache = load_cache()
-    for match in cache.get("matches", []):
-        if str(match.get("event_id")) == str(event_id):
-            return match
-    return None
-
-@app.route("/match/<int:event_id>")
-def match_detail(event_id):
-    return render_template("match_detail.html", event_id=event_id)
-
-@app.route("/api/match/<int:event_id>")
-def match_detail_api(event_id):
-    cache = load_cache()
-    match = next((m for m in cache["matches"] if m["event_id"] == event_id), None)
     if not match:
-        return jsonify({"error": "not found"}), 404
-    return jsonify(match)
+        conn.close()
+        return None
+
+    event_id = match["event_id"]
+
+    cur.execute("""
+        SELECT position, team_name, played, wins, draws, losses,
+               goals_for, goals_against, goal_diff, points
+        FROM standings
+        WHERE event_id = ?
+        ORDER BY position ASC
+    """, (event_id,))
+    flat_table = [dict(r) for r in cur.fetchall()]
+
+    cur.execute("""
+        SELECT team_side, player_name, position, rating
+        FROM lineups
+        WHERE event_id = ?
+    """, (event_id,))
+    lineup_rows = [dict(r) for r in cur.fetchall()]
+
+    cur.execute("""
+        SELECT period, stat_name, home_value, away_value
+        FROM match_stats
+        WHERE event_id = ?
+    """, (event_id,))
+    stat_rows = [dict(r) for r in cur.fetchall()]
+
+    conn.close()
+
+    lineups = {"home_xi": [], "away_xi": []}
+    for row in lineup_rows:
+        player = {
+            "name": row["player_name"],
+            "position": row["position"],
+            "rating": row["rating"],
+        }
+        if row["team_side"] == "home":
+            lineups["home_xi"].append(player)
+        else:
+            lineups["away_xi"].append(player)
+
+    stats_by_period = {"TOTAL": [], "1T": [], "2T": []}
+    for row in stat_rows:
+        stats_by_period.setdefault(row["period"], []).append({
+            "name": row["stat_name"],
+            "home": row["home_value"],
+            "away": row["away_value"],
+        })
+
+    return {
+        "event_id": match["event_id"],
+        "date": match["date"],
+        "time": match["time"],
+        "match_info": dict(match),
+        "flat_table": flat_table,
+        "lineups": lineups,
+        "stats_by_period": stats_by_period,
+    }
+
+
+def get_match_detail_from_db(event_id):
+    conn = get_connection()
+    cur = conn.cursor()
+
+    cur.execute("SELECT * FROM matches WHERE event_id = ?", (event_id,))
+    match = cur.fetchone()
+
+    if not match:
+        conn.close()
+        return None
+
+    cur.execute("""
+        SELECT position, team_name, played, wins, draws, losses,
+               goals_for, goals_against, goal_diff, points
+        FROM standings
+        WHERE event_id = ?
+        ORDER BY position ASC
+    """, (event_id,))
+    flat_table = [dict(r) for r in cur.fetchall()]
+
+    cur.execute("""
+        SELECT team_side, player_name, position, rating
+        FROM lineups
+        WHERE event_id = ?
+    """, (event_id,))
+    lineup_rows = [dict(r) for r in cur.fetchall()]
+
+    cur.execute("""
+        SELECT period, stat_name, home_value, away_value
+        FROM match_stats
+        WHERE event_id = ?
+    """, (event_id,))
+    stat_rows = [dict(r) for r in cur.fetchall()]
+
+    conn.close()
+
+    lineups = {"home_xi": [], "away_xi": []}
+    for row in lineup_rows:
+        player = {
+            "name": row["player_name"],
+            "position": row["position"],
+            "rating": row["rating"],
+        }
+        if row["team_side"] == "home":
+            lineups["home_xi"].append(player)
+        else:
+            lineups["away_xi"].append(player)
+
+    stats_by_period = {"TOTAL": [], "1T": [], "2T": []}
+    for row in stat_rows:
+        stats_by_period.setdefault(row["period"], []).append({
+            "name": row["stat_name"],
+            "home": row["home_value"],
+            "away": row["away_value"],
+        })
+
+    return {
+        "event_id": match["event_id"],
+        "date": match["date"],
+        "time": match["time"],
+        "match_info": dict(match),
+        "flat_table": flat_table,
+        "lineups": lineups,
+        "stats_by_period": stats_by_period,
+    }
+
 
 @app.route("/")
 def index():
     return render_template("main.html")
+
+
+@app.route("/calendario")
+def calendario():
+    matches = get_previous_matches_from_db()
+    return render_template("calendario.html", matches=matches)
+
+
+@app.route("/tabla")
+def tabla():
+    return render_template("tabla.html")
+
+
+@app.route("/match/<int:event_id>")
+def match_detail(event_id):
+    return render_template("match_detail.html", event_id=event_id)
 
 
 @app.route("/api/next-match")
@@ -108,45 +222,64 @@ def next_match_route():
 
 @app.route("/api/previous-matches")
 def previous_matches_route():
-    return jsonify(get_cached_matches())
+    return jsonify(get_previous_matches_from_db())
 
-@app.route("/calendario")
-def calendario():
-    matches = get_cached_matches()
-    return render_template("calendario.html", matches=matches)
 
-@app.route("/api/calendario")
-def calendario_api():
-    cache = load_cache()
-    past = []
-    for m in cache.get("matches", []):
-        info = m["match_info"]
-        past.append({
-            "event_id": m["event_id"],
-            "date": m["date"],
-            "time": m["time"],
-            "home_team": info["home_team"],
-            "away_team": info["away_team"],
-            "home_score": info["home_score"],
-            "away_score": info["away_score"],
-            "tournament_name": info["tournament_name"],
-            "status": info["status"],
-        })
-    past.sort(key=lambda x: x["event_id"], reverse=True)
+@app.route("/api/last-match-detail")
+def last_match_detail():
+    detail = get_latest_match_detail_from_db()
+    return jsonify(detail or {})
 
-    upcoming = [
-        {"date": "20/04/2026", "time": "20:30", "home_team": "Atlético Nacional", "away_team": "Atlético Bucaramanga", "tournament_name": "Primera A, Apertura", "status": "Not started"},
-        {"date": "25/04/2026", "time": "20:30", "home_team": "Deportivo Pereira", "away_team": "Atlético Nacional", "tournament_name": "Primera A, Apertura", "status": "Not started"},
-    ]
 
-    return jsonify({"past": past, "upcoming": upcoming})
+@app.route("/api/match/<int:event_id>")
+def match_detail_api(event_id):
+    detail = get_match_detail_from_db(event_id)
+    if not detail:
+        return jsonify({"error": "not found"}), 404
+    return jsonify(detail)
+
+
+@app.route("/api/tabla")
+def tabla_api():
+    conn = get_connection()
+    cur = conn.cursor()
+
+    cur.execute("""
+        SELECT event_id
+        FROM matches
+        ORDER BY start_time DESC
+        LIMIT 1
+    """)
+    latest = cur.fetchone()
+
+    if not latest:
+        conn.close()
+        return jsonify({"table": []})
+
+    cur.execute("""
+        SELECT position,
+               team_name AS team,
+               played,
+               wins,
+               draws,
+               losses,
+               goals_for,
+               goals_against,
+               goal_diff AS goal_difference,
+               points
+        FROM standings
+        WHERE event_id = ?
+        ORDER BY position ASC
+    """, (latest["event_id"],))
+
+    rows = [dict(r) for r in cur.fetchall()]
+    conn.close()
+
+    return jsonify({"table": rows})
 
 
 @app.route("/api/next-match/detail")
 def next_match_detail():
-    from .api import get_next_match, get_odds, get_lineups, get_main_odds_market_from_markets
-    import time
-
     next_match = get_next_match()
     if not next_match:
         return jsonify({"error": "No next match found"}), 404
@@ -168,43 +301,6 @@ def next_match_detail():
         "lineups": lineups,
     })
 
-@app.route("/api/tabla")
-def tabla_api():
-    cache = load_cache()
-    matches = cache.get("matches", [])
-
-    if not matches:
-        return jsonify({"table": []})
-
-    latest_match = sorted(
-        matches,
-        key=lambda x: x.get("match_info", {}).get("start_time") or 0,
-        reverse=True
-    )[0]
-
-    flat_table = latest_match.get("flat_table", []) or []
-
-    table = []
-    for row in flat_table:
-        table.append({
-            "position": row.get("position"),
-            "team": row.get("team_name"),
-            "played": row.get("played"),
-            "wins": row.get("wins"),
-            "draws": row.get("draws"),
-            "losses": row.get("losses"),
-            "goals_for": row.get("goals_for"),
-            "goals_against": row.get("goals_against"),
-            "goal_difference": row.get("goal_diff"),
-            "points": row.get("points"),
-        })
-
-    return jsonify({"table": table})
-
-@app.route("/tabla")
-def tabla():
-    matches = get_cached_matches()
-    return render_template("tabla.html", matches=matches)
 
 if __name__ == "__main__":
     app.run(debug=True, host="0.0.0.0", port=int(os.environ.get("PORT", 5000)))

@@ -133,7 +133,7 @@ function renderPrevious(matches){
   cont.innerHTML = '';
 
   if(!matches || !matches.length){
-    cont.textContent = 'Sin partidos en el cache.';
+    cont.textContent = 'Sin partidos por mostrar.';
     formEl.textContent = '';
     return;
   }
