@@ -401,5 +401,31 @@ def estadisticas_api():
         "players": players
     })
 
+@app.route("/plantel")
+def plantel():
+    return render_template("plantel.html")
+
+@app.route("/api/plantel")
+def plantel_api():
+    conn = get_connection()
+    cur = conn.cursor()
+
+    cur.execute("""
+        SELECT
+            player_name,
+            MAX(position) AS position,
+            COUNT(*) AS appearances,
+            ROUND(AVG(rating), 2) AS avg_rating
+        FROM lineups
+        WHERE team_id = 6106
+        GROUP BY player_name
+        ORDER BY appearances DESC, avg_rating DESC, player_name ASC
+    """)
+    players = [dict(r) for r in cur.fetchall()]
+
+    conn.close()
+
+    return jsonify({"players": players})
+
 if __name__ == "__main__":
     app.run(debug=True, host="0.0.0.0", port=int(os.environ.get("PORT", 5000)))
