@@ -45,15 +45,17 @@ def init_db():
 
     cur.execute("""
     CREATE TABLE IF NOT EXISTS lineups (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        event_id INTEGER,
-        team_side TEXT,
-        player_name TEXT,
-        position TEXT,
-        rating REAL,
-        FOREIGN KEY (event_id) REFERENCES matches(event_id)
-    )
-    """)
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    event_id INTEGER,
+    team_side TEXT,
+    team_id INTEGER,
+    team_name TEXT,
+    player_name TEXT,
+    position TEXT,
+    rating REAL,
+    FOREIGN KEY (event_id) REFERENCES matches(event_id)
+                )
+                """)
 
     cur.execute("""
     CREATE TABLE IF NOT EXISTS match_stats (

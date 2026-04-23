@@ -301,6 +301,105 @@ def next_match_detail():
         "lineups": lineups,
     })
 
+@app.route("/estadisticas")
+def estadisticas():
+    return render_template("estadisticas.html")
+
+
+@app.route("/api/estadisticas")
+def estadisticas_api():
+    conn = get_connection()
+    cur = conn.cursor()
+
+    cur.execute("""
+        SELECT event_id, home_team, away_team, home_score, away_score, start_time
+        FROM matches
+        ORDER BY start_time ASC
+    """)
+    matches = [dict(r) for r in cur.fetchall()]
+
+    if not matches:
+        conn.close()
+        return jsonify({
+            "summary": {},
+            "recent_form": [],
+            "top_players": [],
+            "players": []
+        })
+
+    played = len(matches)
+    wins = 0
+    draws = 0
+    losses = 0
+    goals_for = 0
+    goals_against = 0
+    recent_form = []
+
+    for m in matches:
+        nac_is_home = m["home_team"] == "Atlético Nacional"
+        nac_score = m["home_score"] if nac_is_home else m["away_score"]
+        opp_score = m["away_score"] if nac_is_home else m["home_score"]
+
+        goals_for += nac_score or 0
+        goals_against += opp_score or 0
+
+        if nac_score > opp_score:
+            wins += 1
+            recent_form.append("W")
+        elif nac_score < opp_score:
+            losses += 1
+            recent_form.append("L")
+        else:
+            draws += 1
+            recent_form.append("D")
+
+    points = wins * 3 + draws
+
+    cur.execute("""
+        SELECT
+            player_name,
+            COUNT(*) AS appearances,
+            ROUND(AVG(rating), 2) AS avg_rating
+        FROM lineups
+        WHERE team_id = 6106 AND rating IS NOT NULL
+        GROUP BY player_name
+        ORDER BY avg_rating DESC, appearances DESC
+        LIMIT 8
+    """)
+    top_players = [dict(r) for r in cur.fetchall()]
+
+    cur.execute("""
+        SELECT
+            player_name,
+            MAX(position) AS position,
+            COUNT(*) AS appearances,
+            ROUND(AVG(rating), 2) AS avg_rating
+        FROM lineups
+        WHERE team_id = 6106
+        GROUP BY player_name
+        ORDER BY player_name ASC
+    """)
+    players = [dict(r) for r in cur.fetchall()]
+
+    conn.close()
+
+    return jsonify({
+        "summary": {
+            "played": played,
+            "wins": wins,
+            "draws": draws,
+            "losses": losses,
+            "goals_for": goals_for,
+            "goals_against": goals_against,
+            "goal_diff": goals_for - goals_against,
+            "points": points,
+            "goals_per_game": round(goals_for / played, 2) if played else 0,
+            "goals_against_per_game": round(goals_against / played, 2) if played else 0
+        },
+        "recent_form": recent_form[-5:],
+        "top_players": top_players,
+        "players": players
+    })
 
 if __name__ == "__main__":
     app.run(debug=True, host="0.0.0.0", port=int(os.environ.get("PORT", 5000)))

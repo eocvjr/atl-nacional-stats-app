@@ -110,22 +110,46 @@ def save_standings(cur, event_id, flat_table):
         ))
 
 
-def save_lineups(cur, event_id, lineups):
+def save_lineups(cur, event_id, match_data):
     cur.execute("DELETE FROM lineups WHERE event_id = ?", (event_id,))
 
-    for side_key, players in [("home", lineups.get("home_xi", [])), ("away", lineups.get("away_xi", []))]:
-        for player in players:
-            cur.execute("""
+    info = match_data["match_info"]
+    lineups = match_data.get("lineups", {})
+
+    home_team_id = info.get("home_team_id")
+    away_team_id = info.get("away_team_id")
+    home_team_name = info.get("home_team")
+    away_team_name = info.get("away_team")
+
+    for player in lineups.get("home_xi", []):
+        cur.execute("""
             INSERT INTO lineups (
-                event_id, team_side, player_name, position, rating
-            ) VALUES (?, ?, ?, ?, ?)
-            """, (
-                event_id,
-                side_key,
-                player.get("name"),
-                player.get("position"),
-                player.get("rating"),
-            ))
+                event_id, team_side, team_id, team_name, player_name, position, rating
+            ) VALUES (?, ?, ?, ?, ?, ?, ?)
+        """, (
+            event_id,
+            "home",
+            home_team_id,
+            home_team_name,
+            player.get("name"),
+            player.get("position"),
+            player.get("rating"),
+        ))
+
+    for player in lineups.get("away_xi", []):
+        cur.execute("""
+            INSERT INTO lineups (
+                event_id, team_side, team_id, team_name, player_name, position, rating
+            ) VALUES (?, ?, ?, ?, ?, ?, ?)
+        """, (
+            event_id,
+            "away",
+            away_team_id,
+            away_team_name,
+            player.get("name"),
+            player.get("position"),
+            player.get("rating"),
+        ))
 
 
 def save_stats(cur, event_id, stats_by_period):
@@ -177,7 +201,7 @@ def ingest_matches():
 
         save_match(cur, event_id, match_data, match_date_str, match_time_str)
         save_standings(cur, event_id, match_data.get("flat_table", []))
-        save_lineups(cur, event_id, match_data.get("lineups", {}))
+        save_lineups(cur, event_id, match_data)
         save_stats(cur, event_id, match_data.get("stats_by_period", {}))
 
         inserted += 1

@@ -233,6 +233,11 @@ async function initDashboard(){
     if(lastDetail && lastDetail.flat_table){
       renderTableFromFlat(lastDetail.flat_table);
     }
+    
+    const lineupBtn = document.getElementById('lineup-detail-btn');
+    if (lineupBtn && lastDetail && lastDetail.event_id) {
+      lineupBtn.href = `/match/${lastDetail.event_id}`;
+    }
 
     const tabHome = document.getElementById('tab-home');
     const tabAway = document.getElementById('tab-away');
