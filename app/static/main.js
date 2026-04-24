@@ -283,14 +283,14 @@ function renderNextMatch(data){
   const venueEl = document.getElementById('nm-venue');
   const posHomeEl = document.getElementById('nm-pos-home');
   const posAwayEl = document.getElementById('nm-pos-away');
-  const nextCard = document.getElementById('next-match-card');
-
-  if (nextCard) {
-    nextCard.style.cursor = 'pointer';
-    nextCard.onclick = () => {
-      window.location.href = '/next-match';
-    };
-  }
+  const nextMatchMain = document.getElementById('next-match-main');
+  
+  if (nextMatchMain) {
+  nextMatchMain.style.cursor = 'pointer';
+  nextMatchMain.onclick = () => {
+    window.location.href = '/next-match';
+  };
+}
 
   if(!data || !data.home_team){
     if (statusEl) statusEl.textContent = 'Sin próximo partido disponible';

@@ -707,6 +707,7 @@ body{
   .team-name{
     font-size:16px;
   }
+}
 
 /* ===== MOBILE DASHBOARD FIXES ===== */
 
@@ -714,6 +715,10 @@ html,
 body{
   max-width:100%;
   overflow-x:hidden;
+}
+
+.mobile-bottom-nav{
+  display:none !important;
 }
 
 @media (max-width: 768px){
@@ -731,8 +736,27 @@ body{
     overflow-x:hidden;
   }
 
-  .dashboard{
-    padding:18px 14px 110px;
+  .app{
+    display:block;
+    padding:16px 12px 120px;
+  }
+
+  .main{
+    width:100%;
+    max-width:100%;
+  }
+
+  .sidebar{
+    display:none !important;
+  }
+
+  .main-content,
+  .dashboard,
+  main{
+    margin-left:0 !important;
+    width:100% !important;
+    max-width:100% !important;
+    padding-bottom:120px !important;
   }
 
   .topbar,
@@ -752,7 +776,8 @@ body{
   }
 
   .user-avatar,
-  .profile-badge{
+  .profile-badge,
+  .profile-pill{
     width:54px;
     height:54px;
     min-width:54px;
@@ -760,11 +785,17 @@ body{
   }
 
   .dashboard-grid,
-  .main-grid{
+  .main-grid,
+  .content{
     display:flex;
     flex-direction:column;
     gap:18px;
     width:100%;
+  }
+
+  .column{
+    width:100%;
+    min-width:0;
   }
 
   .card,
@@ -785,7 +816,8 @@ body{
 
   .match-box,
   .next-match-box,
-  .match-preview{
+  .match-preview,
+  .next-match-main{
     width:100%;
     max-width:100%;
     padding:18px;
@@ -830,28 +862,35 @@ body{
     height:38px;
     font-size:18px;
     align-self:center;
+    display:flex;
+    align-items:center;
+    justify-content:center;
   }
 
   .match-date,
-  .match-stadium{
+  .match-stadium,
+  .match-meta{
     font-size:15px;
     line-height:1.35;
   }
 
   .standing-row,
-  .table-row{
+  .table-row,
+  .team-row{
     min-width:0;
     padding:14px;
     gap:12px;
   }
 
   .standing-team,
-  .team-info{
+  .team-info,
+  .team-left{
     min-width:0;
   }
 
   .standing-team-name,
-  .team-name-table{
+  .team-name-table,
+  .meta{
     font-size:18px;
     white-space:normal;
     overflow-wrap:break-word;
@@ -866,80 +905,6 @@ body{
     align-items:flex-start;
     gap:12px;
   }
-}
-
-@media (max-width: 430px){
-  .dashboard{
-    padding:16px 12px 120px;
-  }
-
-  .next-match-card,
-  .card{
-    padding:16px;
-  }
-
-  .match-box,
-  .next-match-box,
-  .match-preview{
-    padding:16px;
-  }
-
-  .team-name{
-    font-size:20px;
-  }
-
-  .team-label{
-    font-size:11px;
-  }
-
-  .vs-pill,
-  .vs{
-    width:44px;
-    height:34px;
-    font-size:16px;
-  }
-
-  .match-date,
-  .match-stadium{
-    font-size:14px;
-  }
-
-  .chip,
-  .pill{
-    max-width:100%;
-    white-space:normal;
-    line-height:1.25;
-  }
-
-  .standing-team-name,
-  .team-name-table{
-    font-size:17px;
-  }
-}
-
-.mobile-bottom-nav{
-  display:none;
-}
-
-@media (max-width: 768px){
-  .sidebar{
-    display:none !important;
-  }
-
-  .app-shell,
-  .app-layout,
-  .dashboard-layout{
-    display:block;
-  }
-
-  .main-content,
-  .dashboard,
-  main{
-    margin-left:0 !important;
-    width:100% !important;
-    max-width:100% !important;
-    padding-bottom:120px !important;
-  }
 
   .mobile-bottom-nav{
     position:fixed;
@@ -947,9 +912,11 @@ body{
     right:0;
     bottom:0;
     z-index:9999;
-    display:grid;
+
+    display:grid !important;
     grid-template-columns:repeat(5, 1fr);
     gap:0;
+
     padding:10px 8px calc(10px + env(safe-area-inset-bottom));
     background:rgba(3,7,11,.96);
     border-top:1px solid rgba(255,255,255,.08);
@@ -982,4 +949,56 @@ body{
     background:rgba(39,224,138,.10);
   }
 }
+
+@media (max-width: 430px){
+  .app{
+    padding:16px 12px 120px;
+  }
+
+  .next-match-card,
+  .card{
+    padding:16px;
+  }
+
+  .match-box,
+  .next-match-box,
+  .match-preview,
+  .next-match-main{
+    padding:16px;
+  }
+
+  .team-name{
+    font-size:20px;
+  }
+
+  .team-label{
+    font-size:11px;
+  }
+
+  .vs-pill,
+  .vs{
+    width:44px;
+    height:34px;
+    font-size:16px;
+  }
+
+  .match-date,
+  .match-stadium,
+  .match-meta{
+    font-size:14px;
+  }
+
+  .chip,
+  .pill,
+  .position-chip{
+    max-width:100%;
+    white-space:normal;
+    line-height:1.25;
+  }
+
+  .standing-team-name,
+  .team-name-table,
+  .meta{
+    font-size:17px;
+  }
 }
