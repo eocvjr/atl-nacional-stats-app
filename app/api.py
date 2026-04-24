@@ -500,7 +500,21 @@ def normalize_position(pos):
     }
     return mapping.get(pos, pos)
 
+def extract_player_statistics(item, player_info):
+    stats = {}
 
+    possible_stats = [
+        item.get("statistics") if isinstance(item, dict) else None,
+        item.get("stats") if isinstance(item, dict) else None,
+        player_info.get("statistics") if isinstance(player_info, dict) else None,
+        player_info.get("stats") if isinstance(player_info, dict) else None,
+    ]
+
+    for candidate in possible_stats:
+        if isinstance(candidate, dict):
+            stats.update(candidate)
+
+    return stats
 def extract_players_from_side(side_data):
     if not isinstance(side_data, dict):
         return []
@@ -524,7 +538,11 @@ def extract_players_from_side(side_data):
         return players
 
     for item in raw_players:
-        player_info = item.get("player", item) if isinstance(item, dict) else {}
+        if not isinstance(item, dict):
+            continue
+
+        player_info = item.get("player", item)
+
         if not isinstance(player_info, dict):
             continue
 
@@ -553,13 +571,45 @@ def extract_players_from_side(side_data):
         position = normalize_position(position)
 
         rating = get_player_rating(item)
+
         if rating is None:
             rating = get_player_rating(player_info)
 
+        statistics = extract_player_statistics(item, player_info)
+
+        player_id = (
+            player_info.get("id")
+            or item.get("playerId")
+            or item.get("id")
+        )
+
+        shirt_number = (
+            item.get("jerseyNumber")
+            or player_info.get("jerseyNumber")
+            or item.get("shirtNumber")
+            or player_info.get("shirtNumber")
+            or item.get("number")
+            or player_info.get("number")
+        )
+
         players.append({
+            "id": player_id,
+            "player_id": player_id,
             "name": name,
+            "shirt_number": shirt_number,
             "position": position,
             "rating": rating,
+            "statistics": statistics,
+
+            "goals": statistics.get("goals") or statistics.get("goal") or 0,
+            "assists": statistics.get("goalAssist") or statistics.get("assists") or 0,
+            "minutes_played": (
+                statistics.get("minutesPlayed")
+                or statistics.get("minutes_played")
+                or statistics.get("minutes")
+            ),
+            "xg": statistics.get("expectedGoals") or statistics.get("xg"),
+            "xa": statistics.get("expectedAssists") or statistics.get("xa"),
         })
 
     return players[:11]
@@ -683,4 +733,36 @@ def get_full_match_center(event_id, tournament_id, season_id):
         "match_stats": raw_stats,
         "stats_by_period": stats_by_period,
         "team_positions": positions,
+    }
+
+def get_player_match_stats(event_id, player_id):
+    # Replace this with the real endpoint / parsing logic you use
+    # Example structure only
+
+    return {
+        "player_id": player_id,
+        "name": "Juan Manuel Rengifo",
+        "position": "MED",
+        "rating": 6.4,
+        "age": 24,
+        "country": "COL",
+        "minutes_played": 87,
+        "goals": 0,
+        "assists": 0,
+        "xg": 0.07,
+        "xa": 0.04,
+        "key_passes": 4,
+        "accurate_passes": "48/55 (87%)",
+        "touches": 72,
+        "shots_total": 2,
+        "shots_on_target": 2,
+        "dribbles": "2 (1)",
+        "possession_lost": 16,
+        "tackles_won": "1 (1)",
+        "recoveries": 2,
+        "ground_duels": "4 (2)",
+        "aerial_duels": "1 (0)",
+        "fouls": 1,
+        "dribbled_past": 0,
+        "heatmap_url": None
     }

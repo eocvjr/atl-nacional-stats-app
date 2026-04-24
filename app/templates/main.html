@@ -1,932 +1,205 @@
 <!doctype html>
 <html lang="es">
 <head>
-<meta charset="utf-8" />
-<meta name="viewport" content="width=device-width,initial-scale=1" />
-<title>Atlético Nacional Stats</title>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
-<style>
-:root{
-  --bg:#050b11;
-  --panel:#071119;
-  --muted:#9aa3af;
-  --text:#e6eef6;
-  --accent:#00c26a;
-  --accent-2:#4dffab;
-  --accent-soft:rgba(0,194,106,0.16);
-  --card:#050a0f;
-  --radius:20px;
-  --border:rgba(255,255,255,0.05);
-  --shadow:0 16px 40px rgba(0,0,0,0.9);
-}
-
-*{
-  box-sizing:border-box;
-}
-
-body{
-  margin:0;
-  font-family:Inter,system-ui,Arial;
-  background:radial-gradient(circle at top left,#07301b,#050b11 50%,#020509 100%);
-  color:var(--text);
-  min-height:100vh;
-}
-
-/* LAYOUT */
-.app{
-  display:flex;
-  gap:28px;
-  padding:28px;
-}
-
-.main{
-  flex:1;
-  display:flex;
-  flex-direction:column;
-  gap:18px;
-  min-width:0;
-}
-
-.content{
-  display:flex;
-  gap:20px;
-  align-items:flex-start;
-}
-
-.column{
-  flex:1;
-  min-width:260px;
-}
-
-/* SIDEBAR */
-.sidebar{
-  width:275px;
-  background:linear-gradient(180deg,#050c11,#020509);
-  border-radius:18px;
-  padding:26px 18px;
-  display:flex;
-  flex-direction:column;
-  gap:22px;
-  box-shadow:0 10px 30px rgba(0,0,0,0.8), inset 0 1px 0 rgba(255,255,255,0.02);
-  border:1px solid rgba(255,255,255,0.04);
-}
-
-.brand{
-  display:flex;
-  align-items:center;
-  gap:14px;
-  font-weight:800;
-  font-size:21px;
-  line-height:1.05;
-  letter-spacing:.045em;
-  text-transform:uppercase;
-}
-
-.brand-logo{
-  width:68px;
-  height:68px;
-  border-radius:10px;
-  overflow:hidden;
-  flex-shrink:0;
-  display:flex;
-  align-items:center;
-  justify-content:center;
-  background:rgba(255,255,255,0.04);
-  box-shadow:0 0 0 2px #020509;
-}
-
-.brand-logo img{
-  width:100%;
-  height:100%;
-  object-fit:contain;
-  display:block;
-  padding:3px;
-}
-
-.nav{
-  margin-top:4px;
-  display:flex;
-  flex-direction:column;
-  gap:10px;
-  font-size:16px;
-}
-
-.nav a{
-  display:flex;
-  align-items:center;
-  gap:12px;
-  padding:13px 15px;
-  border-radius:13px;
-  color:var(--muted);
-  text-decoration:none;
-  cursor:pointer;
-  transition:transform .16s ease, color .16s ease, background .16s ease, box-shadow .16s ease;
-  font-weight:600;
-}
-
-.nav a span.icon{
-  width:26px;
-  height:26px;
-  border-radius:8px;
-  display:flex;
-  align-items:center;
-  justify-content:center;
-  background:rgba(255,255,255,0.03);
-  font-size:15px;
-  flex-shrink:0;
-}
-
-.nav a.active{
-  background:linear-gradient(90deg,rgba(0,194,106,0.24),rgba(0,194,106,0.05));
-  color:#fff;
-  box-shadow:0 8px 20px rgba(0,194,106,0.25);
-}
-
-.nav a:hover{
-  transform:translateX(4px);
-  color:#fff;
-  background:linear-gradient(90deg,rgba(0,194,106,0.18),rgba(0,194,106,0.04));
-}
-
-.sidebar-footer{
-  margin-top:auto;
-  font-size:13px;
-  color:var(--muted);
-  opacity:.82;
-}
-
-/* TOPBAR */
-.topbar{
-  height:54px;
-  display:flex;
-  align-items:center;
-  gap:16px;
-  padding:4px 8px;
-}
-
-.search{
-  flex:1;
-  background:rgba(0,0,0,0.65);
-  padding:11px 16px;
-  border-radius:999px;
-  display:flex;
-  align-items:center;
-  gap:10px;
-  font-size:15px;
-  color:var(--muted);
-  border:1px solid rgba(255,255,255,0.03);
-}
-
-.search-icon{
-  width:24px;
-  height:24px;
-  border-radius:999px;
-  display:flex;
-  align-items:center;
-  justify-content:center;
-  background:rgba(255,255,255,0.02);
-  font-size:13px;
-}
-
-.profile-pill{
-  width:42px;
-  height:42px;
-  border-radius:999px;
-  background:radial-gradient(circle at 30% 0%,var(--accent-2),var(--accent) 50%,#004224 100%);
-  display:flex;
-  align-items:center;
-  justify-content:center;
-  font-weight:800;
-  font-size:14px;
-  box-shadow:0 0 0 2px rgba(0,0,0,0.8);
-}
-
-/* CARDS */
-.card{
-  background:linear-gradient(180deg,rgba(255,255,255,0.02),rgba(0,0,0,0.75));
-  border-radius:var(--radius);
-  padding:22px;
-  box-shadow:var(--shadow);
-  border:1px solid var(--border);
-}
-
-.card-header{
-  display:flex;
-  justify-content:space-between;
-  align-items:center;
-  gap:12px;
-  margin-bottom:16px;
-  font-size:13px;
-  color:var(--muted);
-}
-
-.card-title{
-  font-size:15px;
-  font-weight:700;
-  letter-spacing:.09em;
-}
-
-.middle-column{
-  display:flex;
-  flex-direction:column;
-  gap:20px;
-}
-
-.top-performer-card{
-  min-height:220px;
-  background:
-    radial-gradient(circle at top left, rgba(0,194,106,0.16), transparent 42%),
-    linear-gradient(180deg,rgba(255,255,255,0.02),rgba(0,0,0,0.75));
-}
-
-.top-performer-main{
-  display:flex;
-  align-items:center;
-  gap:14px;
-  margin-top:10px;
-}
-
-.top-performer-avatar{
-  width:58px;
-  height:58px;
-  border-radius:999px;
-  overflow:hidden;
-  flex-shrink:0;
-  display:flex;
-  align-items:center;
-  justify-content:center;
-  background:radial-gradient(circle at 30% 0%,var(--accent-2),var(--accent) 50%,#004224 100%);
-  color:#03100a;
-  font-size:16px;
-  font-weight:900;
-}
-
-.top-performer-avatar img{
-  width:100%;
-  height:100%;
-  object-fit:cover;
-  display:block;
-}
-
-.top-performer-info{
-  min-width:0;
-  flex:1;
-}
-
-.top-performer-name{
-  font-size:17px;
-  font-weight:900;
-  color:#fff;
-}
-
-.top-performer-position{
-  font-size:12px;
-  color:var(--muted);
-  margin-top:3px;
-}
-
-.top-performer-rating{
-  font-size:30px;
-  font-weight:900;
-  color:var(--accent-2);
-}
-
-.top-performer-stats{
-  display:grid;
-  grid-template-columns:repeat(3, 1fr);
-  gap:10px;
-  margin-top:18px;
-}
-
-.top-performer-stats div{
-  padding:12px;
-  border-radius:14px;
-  background:rgba(0,0,0,0.35);
-  border:1px solid rgba(255,255,255,0.04);
-}
-
-.top-performer-stats strong{
-  display:block;
-  font-size:22px;
-  color:#fff;
-  line-height:1;
-}
-
-.top-performer-stats span{
-  display:block;
-  margin-top:6px;
-  font-size:11px;
-  color:var(--muted);
-  text-transform:uppercase;
-  letter-spacing:.06em;
-}
-
-/* NEXT MATCH */
-.next-match-header{
-  display:flex;
-  justify-content:space-between;
-  align-items:center;
-  gap:12px;
-  margin-bottom:14px;
-}
-
-.badge-league{
-  font-size:12px;
-  padding:5px 10px;
-  border-radius:999px;
-  background:rgba(0,0,0,0.55);
-  border:1px solid rgba(255,255,255,0.06);
-  color:var(--muted);
-}
-
-.next-match-main{
-  background:radial-gradient(circle at top left,rgba(0,194,106,0.25),rgba(0,0,0,0.9));
-  border-radius:17px;
-  padding:16px;
-  margin-bottom:16px;
-  display:flex;
-  flex-direction:column;
-  gap:12px;
-}
-
-.teams-row{
-  display:flex;
-  align-items:center;
-  justify-content:space-between;
-  gap:12px;
-}
-
-.team-label{
-  font-size:13px;
-  color:var(--muted);
-  text-transform:uppercase;
-  letter-spacing:.09em;
-}
-
-.team-name{
-  font-size:18px;
-  font-weight:800;
-}
-
-.vs-pill{
-  font-size:12px;
-  padding:6px 10px;
-  border-radius:999px;
-  border:1px solid rgba(255,255,255,0.08);
-  background:rgba(0,0,0,0.65);
-  letter-spacing:.1em;
-  font-weight:800;
-}
-
-.match-meta{
-  display:flex;
-  justify-content:space-between;
-  align-items:center;
-  font-size:13px;
-  color:var(--muted);
-  gap:10px;
-  flex-wrap:wrap;
-}
-
-.position-chip{
-  padding:5px 9px;
-  border-radius:999px;
-  background:rgba(0,0,0,0.7);
-  border:1px solid rgba(255,255,255,0.05);
-  font-size:12px;
-}
-
-.position-chip strong{
-  color:#fff;
-}
-
-/* TABLE PREVIEW */
-.table-list{
-  display:flex;
-  flex-direction:column;
-  gap:9px;
-  margin-top:8px;
-}
-
-.team-row{
-  display:flex;
-  align-items:center;
-  justify-content:space-between;
-  gap:12px;
-  padding:10px;
-  border-radius:13px;
-  background:rgba(255,255,255,0.012);
-}
-
-.team-row.highlight{
-  background:rgba(0,194,106,0.16);
-  box-shadow:0 0 0 1px rgba(0,194,106,0.4);
-}
-
-.team-left{
-  display:flex;
-  align-items:center;
-  gap:11px;
-  min-width:0;
-}
-
-.meta{
-  font-size:14px;
-  font-weight:700;
-}
-
-.meta span.sub{
-  font-size:12px;
-  color:var(--muted);
-  display:block;
-  margin-top:1px;
-  font-weight:500;
-}
-
-.points{
-  font-weight:800;
-  font-size:15px;
-}
-
-/* SHARED AVATARS */
-.avatar{
-  width:32px;
-  height:32px;
-  border-radius:999px;
-  background:rgba(255,255,255,0.02);
-  display:flex;
-  align-items:center;
-  justify-content:center;
-  font-size:13px;
-  font-weight:800;
-  overflow:hidden;
-  flex-shrink:0;
-}
-
-.avatar.green{
-  background:radial-gradient(circle at 30% 0%,var(--accent-2),var(--accent) 50%,#004224 100%);
-}
-
-.avatar img{
-  width:100%;
-  height:100%;
-  object-fit:cover;
-  display:block;
-  border-radius:50%;
-}
-
-/* RECENT MATCHES */
-.recent-summary{
-  font-size:13px;
-  color:var(--muted);
-  margin-bottom:12px;
-}
-
-.match{
-  display:flex;
-  align-items:center;
-  justify-content:space-between;
-  gap:12px;
-  padding:12px 10px;
-  border-radius:13px;
-  background:rgba(255,255,255,0.015);
-}
-
-.match-opponent{
-  display:flex;
-  align-items:center;
-  gap:12px;
-  min-width:0;
-}
-
-.badge-opponent{
-  width:38px;
-  height:38px;
-  border-radius:12px;
-  background:rgba(255,255,255,0.04);
-  display:flex;
-  align-items:center;
-  justify-content:center;
-  font-size:12px;
-  font-weight:800;
-  flex-shrink:0;
-}
-
-.competition-badge{
-  overflow:hidden;
-  background:rgba(255,255,255,0.04);
-}
-
-.competition-badge img{
-  width:27px;
-  height:27px;
-  object-fit:contain;
-  display:block;
-}
-
-.match-info{
-  font-size:14px;
-  line-height:1.15;
-  font-weight:700;
-  min-width:0;
-}
-
-.match-info span.label{
-  display:block;
-  color:var(--muted);
-  font-size:12px;
-  margin-bottom:3px;
-  font-weight:500;
-}
-
-.score-pill{
-  font-size:14px;
-  padding:6px 11px;
-  border-radius:999px;
-  font-weight:900;
-  flex-shrink:0;
-}
-
-.score-win{
-  background:rgba(0,194,106,0.16);
-  color:#74f0ba;
-}
-
-.score-loss{
-  background:rgba(255,76,76,0.16);
-  color:#ffb3b3;
-}
-
-.score-draw{
-  background:rgba(255,255,255,0.08);
-  color:#f3f4f6;
-}
-
-/* PLAYER RATINGS */
-.tab-switch{
-  display:flex;
-  gap:8px;
-  border-radius:999px;
-  padding:3px;
-  background:rgba(255,255,255,0.03);
-}
-
-.tab-switch button{
-  flex:1;
-  border:none;
-  border-radius:999px;
-  padding:7px 11px;
-  font-size:12px;
-  color:var(--muted);
-  background:transparent;
-  cursor:pointer;
-}
-
-.tab-switch button.active{
-  background:var(--accent-soft);
-  color:#eafff5;
-  font-weight:800;
-}
-
-.player-list{
-  margin-top:10px;
-  display:flex;
-  flex-direction:column;
-  gap:9px;
-}
-
-.player{
-  display:flex;
-  align-items:center;
-  justify-content:space-between;
-  gap:11px;
-  padding:10px;
-  border-radius:12px;
-  background:rgba(255,255,255,0.02);
-}
-
-.player .name{
-  display:flex;
-  align-items:center;
-  gap:11px;
-  min-width:170px;
-}
-
-.player-meta{
-  font-size:13px;
-  font-weight:800;
-}
-
-.player-meta span.role{
-  display:block;
-  font-size:11px;
-  color:var(--muted);
-  margin-top:1px;
-  font-weight:600;
-}
-
-.player .bar{
-  flex:1;
-  height:7px;
-  margin:0 8px;
-  border-radius:999px;
-  background:rgba(255,255,255,0.06);
-  position:relative;
-  overflow:hidden;
-}
-
-.player .bar i{
-  position:absolute;
-  inset:0;
-  background:linear-gradient(90deg,var(--accent-2),var(--accent));
-  border-radius:999px;
-}
-
-.rating-value{
-  font-weight:900;
-  font-size:13px;
-  min-width:28px;
-  text-align:right;
-}
-
-/* CTA */
-.cta{
-  display:inline-flex;
-  align-items:center;
-  gap:8px;
-  padding:9px 13px;
-  border-radius:999px;
-  border:1px solid rgba(255,255,255,0.08);
-  color:var(--accent);
-  text-decoration:none;
-  margin-top:14px;
-  font-size:13px;
-  font-weight:700;
-  cursor:pointer;
-  background:rgba(0,0,0,0.6);
-}
-
-.cta span.icon{
-  font-size:14px;
-}
-
-/* RESPONSIVE */
-@media(max-width:1200px){
-  .app{
-    gap:18px;
-    padding:20px;
-  }
-
-  .sidebar{
-    width:250px;
-  }
-
-  .brand{
-    font-size:18px;
-  }
-
-  .brand-logo{
-    width:58px;
-    height:58px;
-  }
-
-  .content{
-    flex-direction:column;
-  }
-
-  .column{
-    width:100%;
-  }
-}
-
-@media(max-width:980px){
-  .app{
-    padding:16px;
-  }
-
-  .sidebar{
-    display:none;
-  }
-
-  .content{
-    flex-direction:column;
-  }
-
-  .team-name{
-    font-size:16px;
-  }
-}
-</style>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Atlético Nacional Stats</title>
+
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="{{ url_for('static', filename='main.css') }}">
 </head>
+
 <body>
-<div class="app">
-  <aside class="sidebar">
-    <div class="brand">
-      <div class="brand-logo">
-        <img src="/static/icons/atletico-nacional.png" alt="Atlético Nacional">
-      </div>
-      <div>
-        ATLÉTICO<br><span style="color:var(--accent)">NACIONAL</span>
-      </div>
-    </div>
-
-    <nav class="nav">
-  <a class="active" href="/">
-    <span class="icon">🏠</span>
-    <span>Dashboard</span>
-  </a>
-  <a href="/calendario">
-    <span class="icon">📅</span>
-    <span>Calendario</span>
-  </a>
-  <a href="/tabla">
-    <span class="icon">📊</span>
-    <span>Tabla</span>
-  </a>
-  <a href="/estadisticas">
-    <span class="icon">📈</span>
-    <span>Estadísticas</span>
-  </a>
-  <a href="/plantel">
-    <span class="icon">👕</span>
-    <span>Plantel</span>
-  </a>
-</nav>
-
-    <div class="sidebar-footer">
-      Atlético Nacional · 2026-I
-    </div>
-  </aside>
-
-  <main class="main">
-    <div class="topbar">
-      <div class="search">
-        <div class="search-icon">🔍</div>
-        <span id="search-placeholder" style="opacity:.75">Buscador (estático)</span>
-      </div>
-      <div class="profile-pill">AN</div>
-    </div>
-
-    <section class="content">
-      <div class="column">
-        <div class="card" id="next-match-card">
-          <div class="next-match-header">
-            <div>
-              <div class="badge-league" id="nm-tournament">Liga BetPlay 2026-I</div>
-              <div style="margin-top:6px;font-size:13px;color:var(--muted)">Próximo partido</div>
-            </div>
-            <div style="font-size:12px;color:var(--muted)" id="nm-status">Cargando…</div>
-          </div>
-
-          <div class="next-match-main" id="next-match-main">
-            <div class="teams-row">
-              <div>
-                <div class="team-label">LOCAL</div>
-                <div class="team-name" id="nm-home">Atlético Nacional</div>
-              </div>
-              <div class="vs-pill">VS</div>
-              <div style="text-align:right">
-                <div class="team-label">VISITANTE</div>
-                <div class="team-name" id="nm-away">Por definir</div>
-              </div>
-            </div>
-
-            <div class="match-meta">
-              <div>
-                <span id="nm-date">--/--/----</span> ·
-                <span id="nm-time">--:--</span>
-              </div>
-              <div id="nm-venue">—</div>
-            </div>
-
-            <div class="match-meta" style="margin-top:4px">
-              <div class="position-chip" id="nm-pos-home">
-                Atl Nacional: <strong>-</strong>° en la Liga BetPlay
-              </div>
-              <div class="position-chip" id="nm-pos-away">
-                Rival: <strong>-</strong>° en la Liga BetPlay
-              </div>
-            </div>
-          </div>
-
-          <div class="card-header" style="margin-top:6px">
-            <div class="card-title">TABLA LIGA BETPLAY</div>
-            <div style="font-size:12px;color:var(--muted)">Actualizada a la fecha más reciente</div>
-          </div>
-
-          <div class="table-list" id="table-body"></div>
-
-          <a class="cta" href="/tabla" onclick="event.stopPropagation()">
-            <span class="icon">📊</span>
-            Ver tabla completa
-          </a>
+  <div class="app">
+    <aside class="sidebar">
+      <div class="brand">
+        <div class="brand-logo">
+          <img src="{{ url_for('static', filename='icons/atletico-nacional.png') }}" alt="Atlético Nacional">
+        </div>
+        <div>
+          VERDE<br><span style="color:var(--accent)">STATS</span>
         </div>
       </div>
 
-      <div class="column middle-column">
-  <div class="card">
-    <div class="card-header">
-      <div class="card-title">PARTIDOS RECIENTES</div>
-      <div id="recent-form" style="font-size:12px;color:var(--muted)">Cargando…</div>
-    </div>
+      <nav class="nav">
+        <a class="active" href="/">
+          <span class="icon">🏠</span>
+          <span>Dashboard</span>
+        </a>
 
-    <div class="recent-summary" id="recent-summary">
-      Últimos partidos de Atlético Nacional (Liga BetPlay).
-    </div>
+        <a href="/calendario">
+          <span class="icon">📅</span>
+          <span>Calendario</span>
+        </a>
 
-    <div id="recent-matches"></div>
-  </div>
+        <a href="/tabla">
+          <span class="icon">📊</span>
+          <span>Tabla</span>
+        </a>
 
-  <div class="card top-performer-card" id="top-performer-card" style="display:none;">
-    <div class="card-header">
-      <div class="card-title">MEJOR RENDIMIENTO</div>
-      <div style="font-size:12px;color:var(--muted)">Últimos 5 partidos</div>
-    </div>
+        <a href="/estadisticas">
+          <span class="icon">📈</span>
+          <span>Estadísticas</span>
+        </a>
 
-    <div class="top-performer-main">
-      <div class="top-performer-avatar" id="top-performer-avatar">AN</div>
+        <a href="/plantel">
+          <span class="icon">👕</span>
+          <span>Plantel</span>
+        </a>
+      </nav>
 
-      <div class="top-performer-info">
-        <div class="top-performer-name" id="top-performer-name">-</div>
-        <div class="top-performer-position" id="top-performer-position">-</div>
+      <div class="sidebar-footer">
+        Atlético Nacional · 2026-I
+      </div>
+    </aside>
+
+    <main class="main">
+      <div class="topbar">
+        <div class="search">
+          <div class="search-icon">🔍</div>
+          <span id="search-placeholder" style="opacity:.75">Buscador (estático)</span>
+        </div>
+
+        <div class="profile-pill">AN</div>
       </div>
 
-      <div class="top-performer-rating" id="top-performer-rating">-</div>
-    </div>
+      <section class="content">
+        <div class="column">
+          <div class="card" id="next-match-card">
+            <div class="next-match-header">
+              <div>
+                <div class="badge-league" id="nm-tournament">Liga BetPlay 2026-I</div>
+                <div style="margin-top:6px;font-size:13px;color:var(--muted)">Próximo partido</div>
+              </div>
 
-    <div class="top-performer-stats">
-      <div>
-        <strong id="top-performer-matches">-</strong>
-        <span>Partidos</span>
-      </div>
-      <div>
-        <strong id="top-performer-goals">-</strong>
-        <span>Goles</span>
-      </div>
-      <div>
-        <strong id="top-performer-assists">-</strong>
-        <span>Asistencias</span>
-      </div>
-    </div>
-  </div>
-</div>
+              <div style="font-size:12px;color:var(--muted)" id="nm-status">Cargando…</div>
+            </div>
 
-      <div class="top-performer-card" id="top-performer-card" style="display:none;">
-  <div class="top-performer-label">Mejor rendimiento últimos 5</div>
+            <div class="next-match-main" id="next-match-main">
+              <div class="teams-row">
+                <div>
+                  <div class="team-label">LOCAL</div>
+                  <div class="team-name" id="nm-home">Atlético Nacional</div>
+                </div>
 
-  <div class="top-performer-main">
-    <div class="top-performer-avatar" id="top-performer-avatar">AN</div>
+                <div class="vs-pill">VS</div>
 
-    <div class="top-performer-info">
-      <div class="top-performer-name" id="top-performer-name">-</div>
-      <div class="top-performer-position" id="top-performer-position">-</div>
-    </div>
+                <div style="text-align:right">
+                  <div class="team-label">VISITANTE</div>
+                  <div class="team-name" id="nm-away">Por definir</div>
+                </div>
+              </div>
 
-    <div class="top-performer-rating" id="top-performer-rating">-</div>
-  </div>
+              <div class="match-meta">
+                <div>
+                  <span id="nm-date">--/--/----</span> ·
+                  <span id="nm-time">--:--</span>
+                </div>
+                <div id="nm-venue">—</div>
+              </div>
 
-  <div class="top-performer-stats">
-    <div>
-      <strong id="top-performer-matches">-</strong>
-      <span>Partidos</span>
-    </div>
-    <div>
-      <strong id="top-performer-goals">-</strong>
-      <span>Goles</span>
-    </div>
-    <div>
-      <strong id="top-performer-assists">-</strong>
-      <span>Asistencias</span>
-    </div>
-  </div>
-</div>
+              <div class="match-meta" style="margin-top:4px">
+                <div class="position-chip" id="nm-pos-home">
+                  Atl Nacional: <strong>-</strong>° en la Liga BetPlay
+                </div>
 
-      <div class="column">
-        <div class="card">
-          <div class="card-header">
-            <div class="card-title">RENDIMIENTO DEL PARTIDO</div>
-            <div class="tab-switch">
-              <button class="active" id="tab-home">XI Nacional</button>
-              <button id="tab-away">Rival</button>
+                <div class="position-chip" id="nm-pos-away">
+                  Rival: <strong>-</strong>° en la Liga BetPlay
+                </div>
+              </div>
+            </div>
+
+            <div class="card-header" style="margin-top:6px">
+              <div class="card-title">TABLA LIGA BETPLAY</div>
+              <div style="font-size:12px;color:var(--muted)">Actualizada a la fecha más reciente</div>
+            </div>
+
+            <div class="table-list" id="table-body"></div>
+
+            <a class="cta" href="/tabla" onclick="event.stopPropagation()">
+              <span class="icon">📊</span>
+              Ver tabla completa
+            </a>
+          </div>
+        </div>
+
+        <div class="column middle-column">
+          <div class="card">
+            <div class="card-header">
+              <div class="card-title">PARTIDOS RECIENTES</div>
+              <div id="recent-form" style="font-size:12px;color:var(--muted)">Cargando…</div>
+            </div>
+
+            <div class="recent-summary" id="recent-summary">
+              Últimos partidos de Atlético Nacional (Liga BetPlay).
+            </div>
+
+            <div id="recent-matches"></div>
+          </div>
+
+          <div class="card top-performer-card" id="top-performer-card" style="display:none;">
+            <div class="card-header">
+              <div class="card-title">MEJOR RENDIMIENTO</div>
+              <div style="font-size:12px;color:var(--muted)">Últimos 5 partidos</div>
+            </div>
+
+            <div class="top-performer-main">
+              <div class="top-performer-avatar" id="top-performer-avatar">AN</div>
+
+              <div class="top-performer-info">
+                <div class="top-performer-name" id="top-performer-name">-</div>
+                <div class="top-performer-position" id="top-performer-position">-</div>
+              </div>
+
+              <div class="top-performer-rating" id="top-performer-rating">-</div>
+            </div>
+
+            <div class="top-performer-stats">
+              <div>
+                <strong id="top-performer-matches">-</strong>
+                <span>Partidos</span>
+              </div>
+
+              <div>
+                <strong id="top-performer-goals">-</strong>
+                <span>Goles</span>
+              </div>
+
+              <div>
+                <strong id="top-performer-assists">-</strong>
+                <span>Asistencias</span>
+              </div>
             </div>
           </div>
-
-          <div style="font-size:12px;color:var(--muted);margin-bottom:8px" id="players-match-label">
-            Último partido disputado
-          </div>
-
-          <div class="player-list" id="player-list"></div>
-
-          <a class="cta" id="lineup-detail-btn" href="#">
-            <span class="icon">🎽</span>
-            Ver detalle de alineaciones
-          </a>
         </div>
-      </div>
-    </section>
-  </main>
-</div>
 
-<script src="/static/main.js?v=11"></script>
+        <div class="column">
+          <div class="card">
+            <div class="card-header">
+              <div class="card-title">RENDIMIENTO DEL PARTIDO</div>
+
+              <div class="tab-switch">
+                <button class="active" id="tab-home">XI Nacional</button>
+                <button id="tab-away">Rival</button>
+              </div>
+            </div>
+
+            <div style="font-size:12px;color:var(--muted);margin-bottom:8px" id="players-match-label">
+              Último partido disputado
+            </div>
+
+            <div class="player-list" id="player-list"></div>
+
+            <a class="cta" id="lineup-detail-btn" href="#">
+              <span class="icon">🎽</span>
+              Ver detalle de alineaciones
+            </a>
+          </div>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <script src="{{ url_for('static', filename='main.js') }}"></script>
 </body>
 </html>

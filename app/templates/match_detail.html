@@ -4,324 +4,11 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>Match Detail - Atlético Nacional</title>
-  <style>
-    
-    :root{
-      --bg:#050b11;
-      --panel:#071119;
-      --muted:#9aa3af;
-      --accent:#00c26a;
-      --accent-soft:rgba(0,194,106,0.16);
-      --card:#050a0f;
-      --radius:20px;
-    }
 
-    *{box-sizing:border-box}
-
-    body{
-      margin:0;
-      font-family:Inter, Arial, sans-serif;
-      background:radial-gradient(circle at top left,#07301b,#050b11 50%,#020509 100%);
-      color:#e6eef6;
-      min-height:100vh;
-      padding:28px;
-    }
-
-    .container{
-      max-width:1200px;
-      margin:0 auto;
-      display:flex;
-      flex-direction:column;
-      gap:20px;
-    }
-
-    .top-link{
-      display:inline-flex;
-      align-items:center;
-      gap:8px;
-      width:fit-content;
-      padding:8px 12px;
-      border-radius:999px;
-      border:1px solid rgba(255,255,255,0.08);
-      color:var(--accent);
-      text-decoration:none;
-      background:rgba(0,0,0,0.6);
-      font-size:13px;
-    }
-
-    .card{
-      background:linear-gradient(180deg,rgba(255,255,255,0.02),rgba(0,0,0,0.75));
-      border-radius:var(--radius);
-      padding:20px;
-      box-shadow:0 16px 40px rgba(0,0,0,0.9);
-      border:1px solid rgba(255,255,255,0.05);
-    }
-
-    .hero{
-      background:radial-gradient(circle at top left,rgba(0,194,106,0.22),rgba(0,0,0,0.9));
-    }
-
-    .badge{
-      display:inline-block;
-      font-size:11px;
-      padding:4px 8px;
-      border-radius:999px;
-      background:rgba(0,0,0,0.55);
-      border:1px solid rgba(255,255,255,0.06);
-      color:var(--muted);
-      margin-bottom:12px;
-    }
-
-    .hero-top{
-      display:flex;
-      justify-content:space-between;
-      gap:20px;
-      align-items:flex-start;
-      flex-wrap:wrap;
-      margin-bottom:16px;
-    }
-
-    .hero-title{
-      font-size:32px;
-      font-weight:800;
-      margin:0 0 8px;
-    }
-
-    .hero-sub{
-      color:var(--muted);
-      font-size:14px;
-    }
-
-    .status{
-      font-size:13px;
-      color:var(--muted);
-    }
-
-    .teams-row{
-      display:flex;
-      justify-content:space-between;
-      align-items:center;
-      gap:16px;
-      flex-wrap:wrap;
-      margin-top:18px;
-    }
-
-    .team-block{
-      flex:1;
-      min-width:220px;
-    }
-
-    .team-block.right{
-      text-align:right;
-    }
-
-    .team-label{
-      font-size:12px;
-      color:var(--muted);
-      text-transform:uppercase;
-      letter-spacing:.08em;
-      margin-bottom:6px;
-    }
-
-    .team-name{
-      font-size:28px;
-      font-weight:800;
-    }
-
-    .score-box{
-      min-width:120px;
-      text-align:center;
-    }
-
-    .score{
-      font-size:40px;
-      font-weight:800;
-      line-height:1;
-    }
-
-    .section-title{
-      font-size:16px;
-      font-weight:700;
-      letter-spacing:.04em;
-      margin-bottom:14px;
-    }
-
-    .grid-2{
-      display:grid;
-      grid-template-columns:1fr 1fr;
-      gap:20px;
-    }
-
-    .lineup-list{
-      display:flex;
-      flex-direction:column;
-      gap:8px;
-    }
-
-    .player{
-      display:flex;
-      justify-content:space-between;
-      gap:10px;
-      align-items:center;
-      padding:10px 12px;
-      border-radius:12px;
-      background:rgba(255,255,255,0.02);
-    }
-
-    .player-left{
-      display:flex;
-      flex-direction:column;
-      gap:2px;
-    }
-
-    .player-name{
-      font-size:14px;
-      font-weight:600;
-    }
-
-    .player-pos{
-      font-size:11px;
-      color:var(--muted);
-    }
-
-    .player-rating{
-      font-size:13px;
-      font-weight:700;
-    }
-
-    .stats-list{
-      display:flex;
-      flex-direction:column;
-      gap:8px;
-    }
-
-    .stat-row{
-      display:grid;
-      grid-template-columns:80px 1fr 80px;
-      gap:10px;
-      align-items:center;
-      padding:10px 12px;
-      border-radius:12px;
-      background:rgba(255,255,255,0.02);
-      font-size:13px;
-    }
-
-    .stat-name{
-      text-align:center;
-      color:var(--muted);
-    }
-
-    .table-list{
-      display:flex;
-      flex-direction:column;
-      gap:8px;
-    }
-
-    .team-row{
-      display:flex;
-      justify-content:space-between;
-      align-items:center;
-      gap:12px;
-      padding:10px 12px;
-      border-radius:12px;
-      background:rgba(255,255,255,0.02);
-    }
-
-    .team-row.highlight{
-      background:rgba(0,194,106,0.16);
-      box-shadow:0 0 0 1px rgba(0,194,106,0.35);
-    }
-
-    .team-row .left{
-      display:flex;
-      flex-direction:column;
-      gap:2px;
-    }
-
-    .team-row .sub{
-      font-size:11px;
-      color:var(--muted);
-    }
-
-    .empty{
-      color:var(--muted);
-      font-size:15px;
-    }
-
-    @media (max-width: 900px){
-      body{
-        padding:16px;
-      }
-
-      .grid-2{
-        grid-template-columns:1fr;
-      }
-
-      .team-name{
-        font-size:22px;
-      }
-
-      .score{
-        font-size:30px;
-      }
-
-      .hero-title{
-        font-size:24px;
-      }
-
-      .stat-row{
-        grid-template-columns:60px 1fr 60px;
-      }
-    }
-.tab-switch{
-  display:flex;
-  gap:8px;
-  border-radius:999px;
-  padding:3px;
-  background:rgba(255,255,255,0.03);
-}
-
-.tab-switch button{
-  border:none;
-  border-radius:999px;
-  padding:6px 12px;
-  font-size:11px;
-  color:var(--muted);
-  background:transparent;
-  cursor:pointer;
-}
-
-.tab-switch button.active{
-  background:var(--accent-soft);
-  color:#eafff5;
-  font-weight:600;
-}
-.tab-switch{
-  display:flex;
-  gap:8px;
-  border-radius:999px;
-  padding:3px;
-  background:rgba(255,255,255,0.03);
-}
-
-.tab-switch button{
-  border:none;
-  border-radius:999px;
-  padding:6px 12px;
-  font-size:11px;
-  color:var(--muted);
-  background:transparent;
-  cursor:pointer;
-}
-
-.tab-switch button.active{
-  background:var(--accent-soft);
-  color:#eafff5;
-  font-weight:600;
-}
-  </style>
+  <link rel="stylesheet" href="{{ url_for('static', filename='match_detail.css') }}">
 </head>
-<body data-event-id="{{ event_id }}"></body>
+
+<body data-event-id="{{ event_id }}">
   <div class="container">
     <a class="top-link" href="/calendario">← Volver al calendario</a>
 
@@ -337,60 +24,73 @@
             <div class="hero-title" id="md-title">Match Center</div>
             <div class="hero-sub" id="md-meta">Fecha · Hora</div>
           </div>
+
           <div class="status" id="md-status">Estado</div>
         </div>
 
         <div class="teams-row">
-          <div class="team-block">
+          <div class="team-block badge-team">
             <div class="team-label">LOCAL</div>
-            <div class="team-name" id="md-home">Equipo local</div>
+
+            <div class="match-team-badge" id="md-home-badge">AN</div>
+
+            <div class="team-name small" id="md-home">Equipo local</div>
           </div>
 
           <div class="score-box">
             <div class="score">
               <span id="md-home-score">0</span>
-              :
+              <span style="padding:0 8px;">-</span>
               <span id="md-away-score">0</span>
             </div>
           </div>
 
-          <div class="team-block right">
+          <div class="team-block badge-team">
             <div class="team-label">VISITANTE</div>
-            <div class="team-name" id="md-away">Equipo visitante</div>
+
+            <div class="match-team-badge" id="md-away-badge">-</div>
+
+            <div class="team-name small" id="md-away">Equipo visitante</div>
           </div>
         </div>
       </div>
 
       <div class="card">
-        <div class="section-title">Alineaciones</div>
-        <div class="grid-2">
+        <div class="lineup-header">
           <div>
-            <h3 id="md-home-lineup-title">Local</h3>
-            <div id="md-home-lineup" class="lineup-list"></div>
+            <div class="section-title">Alineación de Atlético Nacional</div>
+            <div class="section-kicker" id="lineup-subtitle">XI registrado para este partido.</div>
           </div>
-          <div>
-            <h3 id="md-away-lineup-title">Visitante</h3>
-            <div id="md-away-lineup" class="lineup-list"></div>
+
+          <div class="formation-pill">▦ Formación</div>
+        </div>
+
+        <div class="pitch-shell">
+          <div class="pitch" id="nacional-pitch">
+            <div class="pitch-center-line"></div>
+            <div class="pitch-center-circle"></div>
+            <div class="pitch-dot"></div>
+            <div class="pitch-box top"></div>
+            <div class="pitch-small-box top"></div>
+            <div class="pitch-box bottom"></div>
+            <div class="pitch-small-box bottom"></div>
           </div>
         </div>
       </div>
 
       <div class="card">
-  <div style="display:flex; justify-content:space-between; align-items:center; gap:12px; flex-wrap:wrap; margin-bottom:14px;">
-    <div class="section-title" style="margin-bottom:0;">Estadísticas</div>
+        <div style="display:flex; justify-content:space-between; align-items:center; gap:12px; flex-wrap:wrap; margin-bottom:14px;">
+          <div class="section-title" style="margin-bottom:0;">Estadísticas</div>
 
-    <div class="tab-switch">
-      <button class="active" id="stats-total-btn">Total</button>
-      <button id="stats-1t-btn">1T</button>
-      <button id="stats-2t-btn">2T</button>
-    </div>
-  </div>
+          <div class="tab-switch">
+            <button class="active" id="stats-total-btn">Total</button>
+            <button id="stats-1t-btn">1T</button>
+            <button id="stats-2t-btn">2T</button>
+          </div>
+        </div>
 
-  <div id="md-stats" class="stats-list"></div>
-</div>
-
-  <div id="md-stats" class="stats-list"></div>
-</div>
+        <div id="md-stats" class="stats-list"></div>
+      </div>
 
       <div class="card">
         <div class="section-title">Tabla Liga BetPlay</div>
@@ -399,153 +99,45 @@
     </div>
   </div>
 
-  <script>
-  const EVENT_ID = Number(document.body.dataset.eventId);
-    async function fetchJSON(url) {
-      const res = await fetch(url);
-      if(!res.ok) throw new Error('HTTP ' + res.status);
-      return res.json();
-    }
+  <div id="player-modal" class="player-modal hidden">
+    <div class="player-modal-overlay" id="player-modal-overlay"></div>
 
-    function renderPlayers(containerId, players){
-      const container = document.getElementById(containerId);
-      container.innerHTML = '';
+    <div class="player-modal-panel">
+      <button class="player-modal-close" id="player-modal-close">×</button>
 
-      if(!players || !players.length){
-        container.innerHTML = '<div class="empty">Sin alineación disponible.</div>';
-        return;
-      }
+      <div class="player-modal-header">
+        <div class="player-modal-avatar-wrap">
+          <div id="pm-avatar" class="player-modal-avatar">AN</div>
+          <div id="pm-rating-badge" class="player-modal-rating">-</div>
+        </div>
 
-      players.forEach(player => {
-        const row = document.createElement('div');
-        row.className = 'player';
-        row.innerHTML = `
-          <div class="player-left">
-            <div class="player-name">${player.name || '-'}</div>
-            <div class="player-pos">${player.position || ''}</div>
+        <h2 id="pm-name" class="player-modal-name">Jugador</h2>
+
+        <div class="player-modal-meta">
+          <div class="meta-box">
+            <div id="pm-position" class="meta-value">-</div>
+            <div class="meta-label">Posición</div>
           </div>
-          <div class="player-rating">${player.rating ?? '-'}</div>
-        `;
-        container.appendChild(row);
-      });
-    }
 
-    function renderStats(stats){
-      const container = document.getElementById('md-stats');
-      container.innerHTML = '';
-
-      if(!stats || !stats.length){
-        container.innerHTML = '<div class="empty">Sin estadísticas disponibles.</div>';
-        return;
-      }
-
-      stats.forEach(stat => {
-        const row = document.createElement('div');
-        row.className = 'stat-row';
-        row.innerHTML = `
-          <div>${stat.home ?? '-'}</div>
-          <div class="stat-name">${stat.name || '-'}</div>
-          <div style="text-align:right">${stat.away ?? '-'}</div>
-        `;
-        container.appendChild(row);
-      });
-    }
-
-    function renderTable(rows){
-      const container = document.getElementById('md-table');
-      container.innerHTML = '';
-
-      if(!rows || !rows.length){
-        container.innerHTML = '<div class="empty">Sin tabla disponible.</div>';
-        return;
-      }
-
-      rows.slice(0, 8).forEach(row => {
-        const isNacional = (row.team_name || '').toLowerCase().includes('atlético nacional');
-        const div = document.createElement('div');
-        div.className = 'team-row' + (isNacional ? ' highlight' : '');
-        div.innerHTML = `
-          <div class="left">
-            <div>${row.position}. ${row.team_name}</div>
-            <div class="sub">PJ ${row.played} · G ${row.wins} · E ${row.draws} · P ${row.losses}</div>
+          <div class="meta-box">
+            <div id="pm-team" class="meta-value">AN</div>
+            <div class="meta-label">Equipo</div>
           </div>
-          <div>${row.points} pts</div>
-        `;
-        container.appendChild(div);
-      });
-    }
 
-    async function initMatchDetail(){
-      const loading = document.getElementById('loading');
-      const error = document.getElementById('error');
-      const content = document.getElementById('content');
+          <div class="meta-box">
+            <div id="pm-rating-meta" class="meta-value">-</div>
+            <div class="meta-label">Rating</div>
+          </div>
+        </div>
+      </div>
 
-      try {
-        const match = await fetchJSON(`/api/match/${EVENT_ID}`);
+      <div class="player-modal-body">
+        <h3 class="modal-section-title">Top stats</h3>
+        <div id="pm-stats-list" class="modal-stats-list"></div>
+      </div>
+    </div>
+  </div>
 
-        const info = match.match_info || {};
-        const lineups = match.lineups || {};
-        const statsByPeriod = match.stats_by_period || {};
-        const flatTable = match.flat_table || [];
-
-        document.getElementById('md-tournament').textContent = info.tournament_name || 'Torneo';
-        document.getElementById('md-title').textContent = `${info.home_team || '-'} vs ${info.away_team || '-'}`;
-        document.getElementById('md-meta').textContent = `${match.date || '-'} · ${match.time || '-'}`;
-        document.getElementById('md-status').textContent = info.status || '-';
-
-        document.getElementById('md-home').textContent = info.home_team || '-';
-        document.getElementById('md-away').textContent = info.away_team || '-';
-        document.getElementById('md-home-score').textContent = info.home_score ?? '-';
-        document.getElementById('md-away-score').textContent = info.away_score ?? '-';
-
-        document.getElementById('md-home-lineup-title').textContent = info.home_team || 'Local';
-        document.getElementById('md-away-lineup-title').textContent = info.away_team || 'Visitante';
-
-        renderPlayers('md-home-lineup', lineups.home_xi || []);
-        renderPlayers('md-away-lineup', lineups.away_xi || []);
-        renderTable(flatTable);
-        
-        const totalStats = statsByPeriod.TOTAL || [];
-        const firstHalfStats = statsByPeriod["1T"] || [];
-        const secondHalfStats = statsByPeriod["2T"] || [];
-        const totalBtn = document.getElementById('stats-total-btn');
-        const firstBtn = document.getElementById('stats-1t-btn');
-        const secondBtn = document.getElementById('stats-2t-btn');
-        
-        function setActiveStats(period){
-          totalBtn.classList.remove('active');
-          firstBtn.classList.remove('active');
-          secondBtn.classList.remove('active');
-          
-          if(period === 'TOTAL'){
-            totalBtn.classList.add('active');
-            renderStats(totalStats);
-          } else if(period === '1T'){
-            firstBtn.classList.add('active');
-            renderStats(firstHalfStats);
-          } else if(period === '2T'){
-            secondBtn.classList.add('active');
-            renderStats(secondHalfStats);
-  }
-}
-totalBtn.onclick = () => setActiveStats('TOTAL');
-firstBtn.onclick = () => setActiveStats('1T');
-secondBtn.onclick = () => setActiveStats('2T');
-
-setActiveStats('TOTAL');
-
-        loading.style.display = 'none';
-        error.style.display = 'none';
-        content.style.display = 'flex';
-      } catch (e) {
-        loading.style.display = 'none';
-        error.style.display = 'block';
-        error.textContent = 'No se pudo cargar este partido.';
-        console.error(e);
-      }
-    }
-
-    document.addEventListener('DOMContentLoaded', initMatchDetail);
-  </script>
+  <script src="{{ url_for('static', filename='match_detail.js') }}"></script>
 </body>
 </html>

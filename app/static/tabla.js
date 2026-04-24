@@ -1,9 +1,36 @@
 const TABLA_ENDPOINT = '/api/tabla';
 
+const ESCUDOS = {
+  "Atlético Nacional": "https://images.fotmob.com/image_resources/logo/teamlogo/6368.png",
+  "Deportivo Pasto": "https://images.fotmob.com/image_resources/logo/teamlogo/4405.png",
+  "Junior Barranquilla": "https://images.fotmob.com/image_resources/logo/teamlogo/2254.png",
+  "Deportes Tolima": "https://images.fotmob.com/image_resources/logo/teamlogo/1894.png",
+  "América de Cali": "https://images.fotmob.com/image_resources/logo/teamlogo/10280.png",
+  "Once Caldas": "https://images.fotmob.com/image_resources/logo/teamlogo/6024.png",
+  "Internacional de Bogotá": "https://images.fotmob.com/image_resources/logo/teamlogo/47240.png",
+  "Independiente Santa Fe": "https://images.fotmob.com/image_resources/logo/teamlogo/7818.png",
+  "Deportivo Cali": "https://images.fotmob.com/image_resources/logo/teamlogo/6387.png",
+  "Independiente Medellín": "https://images.fotmob.com/image_resources/logo/teamlogo/2528.png",
+  "Atlético Bucaramanga": "https://images.fotmob.com/image_resources/logo/teamlogo/4401.png",
+  "Millonarios": "https://images.fotmob.com/image_resources/logo/teamlogo/4403.png",
+  "Rionegro Águilas Doradas": "https://images.fotmob.com/image_resources/logo/teamlogo/193025.png",
+  "Llaneros FC": "https://images.fotmob.com/image_resources/logo/teamlogo/348397.png",
+  "Fortaleza FC": "https://images.fotmob.com/image_resources/logo/teamlogo/244167.png",
+  "Cúcuta Deportivo": "https://images.fotmob.com/image_resources/logo/teamlogo/6254.png",
+  "Alianza Valledupar FC": "https://images.fotmob.com/image_resources/logo/teamlogo/193029.png",
+  "Jaguares de Córdoba": "https://images.fotmob.com/image_resources/logo/teamlogo/424270.png",
+  "Boyacá Chicó FC": "https://images.fotmob.com/image_resources/logo/teamlogo/6255.png",
+  "Deportivo Pereira": "https://images.fotmob.com/image_resources/logo/teamlogo/4404.png"
+};
+
 async function fetchJSON(url){
   const res = await fetch(url);
   if(!res.ok) throw new Error('HTTP ' + res.status + ' al llamar ' + url);
   return res.json();
+}
+
+function getTeamBadge(teamName){
+  return ESCUDOS[teamName] || null;
 }
 
 function formatDG(gf, ga){
@@ -22,15 +49,10 @@ function renderStats(row){
     return;
   }
 
-  const posEl = document.getElementById('s-pos');
-  const ptsEl = document.getElementById('s-pts');
-  const pjEl = document.getElementById('s-pj');
-  const dgEl = document.getElementById('s-dg');
-
-  if (posEl) posEl.textContent = (row.position ?? '-') + '°';
-  if (ptsEl) ptsEl.textContent = row.points ?? '-';
-  if (pjEl) pjEl.textContent = row.played ?? '-';
-  if (dgEl) dgEl.textContent = formatDG(row.goals_for, row.goals_against);
+  document.getElementById('s-pos').textContent = (row.position ?? '-') + '°';
+  document.getElementById('s-pts').textContent = row.points ?? '-';
+  document.getElementById('s-pj').textContent = row.played ?? '-';
+  document.getElementById('s-dg').textContent = formatDG(row.goals_for, row.goals_against);
 
   statsRow.style.display = 'flex';
 }
@@ -46,17 +68,17 @@ function renderTable(rows){
 
   if(!rows || !rows.length){
     tableBody.innerHTML = '<div class="state-msg">Sin tabla disponible.</div>';
-    if (updatedEl) updatedEl.textContent = 'Sin datos';
-    if (dateEl) dateEl.textContent = '';
+    if(updatedEl) updatedEl.textContent = 'Sin datos';
+    if(dateEl) dateEl.textContent = '';
     renderStats(null);
     return;
   }
 
-  if (updatedEl) {
+  if(updatedEl){
     updatedEl.textContent = `${rows.length} equipos · actualizado a la fecha más reciente`;
   }
 
-  if (dateEl) {
+  if(dateEl){
     dateEl.textContent = '';
   }
 
@@ -85,6 +107,7 @@ function renderTable(rows){
     else zoneBorder = 'border-left:3px solid transparent;';
 
     const dg = formatDG(row.goals_for, row.goals_against);
+    const badgeUrl = getTeamBadge(row.team);
 
     const div = document.createElement('div');
     div.className = 'team-row' + (isNacional ? ' highlight' : '');
@@ -95,6 +118,11 @@ function renderTable(rows){
       <div class="${posBadgeClass}">${pos}</div>
 
       <div class="team-name-cell">
+        ${
+          badgeUrl
+            ? `<img class="team-badge" src="${badgeUrl}" alt="${row.team}" onerror="this.style.display='none'">`
+            : `<span class="team-badge-fallback">${String(row.team || '?').slice(0,2).toUpperCase()}</span>`
+        }
         <span class="name${isNacional ? ' highlight-name' : ''}">${row.team}</span>
       </div>
 
@@ -116,15 +144,15 @@ async function initTabla(){
 
   if(!tableBody) return;
 
-  try {
+  try{
     const data = await fetchJSON(TABLA_ENDPOINT);
     renderTable(data.table || []);
-  } catch(e) {
+  } catch(e){
     console.error('Error cargando tabla:', e);
     tableBody.innerHTML =
       '<div class="state-msg">Error al cargar la tabla. Revisá la consola.</div>';
 
-    if (updatedEl) updatedEl.textContent = 'Error de conexión';
+    if(updatedEl) updatedEl.textContent = 'Error de conexión';
   }
 }
 

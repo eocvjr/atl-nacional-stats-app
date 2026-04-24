@@ -4,205 +4,117 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>Calendario histórico - Atlético Nacional</title>
-  <style>
-    body{
-      margin:0;
-      font-family:Arial, sans-serif;
-      background:#06110c;
-      color:#eaf7ef;
-      padding:32px;
-    }
 
-    .container{
-      max-width:1400px;
-      margin:0 auto;
-    }
-
-    h1{
-      margin:0 0 8px;
-      font-size:52px;
-      font-weight:800;
-    }
-
-    .subtitle{
-      color:#9fb3a7;
-      margin-bottom:28px;
-      font-size:22px;
-    }
-
-    .top-link{
-      display:inline-block;
-      margin-bottom:20px;
-      color:#7df0b1;
-      text-decoration:none;
-      font-size:15px;
-    }
-
-    .match-list{
-      display:grid;
-      grid-template-columns:repeat(2, minmax(0, 1fr));
-      gap:22px;
-    }
-
-    .match-card{
-      background:linear-gradient(180deg, rgba(255,255,255,0.03), rgba(0,0,0,0.55));
-      border:1px solid rgba(255,255,255,0.08);
-      border-radius:24px;
-      padding:22px 24px;
-      box-shadow:0 16px 40px rgba(0,0,0,0.35);
-    }
-
-    .match-top{
-      display:flex;
-      justify-content:space-between;
-      align-items:center;
-      gap:16px;
-      margin-bottom:18px;
-      color:#a7b7ad;
-      font-size:14px;
-      flex-wrap:wrap;
-    }
-
-    .match-main{
-      display:flex;
-      flex-direction:column;
-      align-items:center;
-      gap:18px;
-      text-align:center;
-    }
-
-    .teams-row{
-      display:flex;
-      align-items:center;
-      justify-content:center;
-      gap:14px;
-      flex-wrap:wrap;
-    }
-
-    .team-name{
-      font-size:28px;
-      font-weight:800;
-      color:#f3fbf6;
-      line-height:1.2;
-    }
-
-    .vs{
-      font-size:13px;
-      color:#95a59a;
-      text-transform:uppercase;
-      letter-spacing:.08em;
-    }
-
-    .score{
-      padding:10px 20px;
-      border-radius:999px;
-      min-width:92px;
-      text-align:center;
-      font-weight:800;
-      font-size:30px;
-      line-height:1;
-    }
-
-    .score-win{
-      background:rgba(0,194,106,0.16);
-      color:#09a863;
-    }
-
-    .score-draw{
-      background:rgba(255,255,255,0.10);
-      color:#8f949ecb;
-    }
-
-    .score-loss{
-      background:rgba(255,76,76,0.16);
-      color:#ba0a0a;
-    }
-
-    .empty{
-      color:#9fb3a7;
-      padding:20px 0;
-      font-size:18px;
-    }
-
-    .match-link{
-      text-decoration:none;
-      color:inherit;
-      display:block;
-}
-
-    .match-link:hover .match-card{
-      transform:translateY(-2px);
-      box-shadow:0 20px 46px rgba(0,0,0,0.42);
-}
-
-    .match-card{
-      background:linear-gradient(180deg, rgba(255,255,255,0.03), rgba(0,0,0,0.55));
-      border:1px solid rgba(255,255,255,0.08);
-      border-radius:24px;
-      padding:22px 24px;
-      box-shadow:0 16px 40px rgba(0,0,0,0.35);
-      transition:transform .15s ease, box-shadow .15s ease;
-      cursor:pointer;
-}
-
-    @media (max-width: 900px){
-      body{
-        padding:20px;
-      }
-
-      .match-list{
-        grid-template-columns:1fr;
-      }
-
-      h1{
-        font-size:38px;
-      }
-
-      .subtitle{
-        font-size:18px;
-      }
-
-      .team-name{
-        font-size:22px;
-      }
-
-      .score{
-        font-size:24px;
-      }
-    }
-  </style>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="{{ url_for('static', filename='calendario.css') }}">
 </head>
+
 <body>
-  <div class="container">
+  <div class="page">
     <a class="top-link" href="/">← Volver al dashboard</a>
-    <h1>Calendario</h1>
-    <div class="subtitle">Partidos Liga BetPlay 2026-1</div>
+
+    <header class="hero">
+      <div>
+        <div class="eyebrow">Atlético Nacional · 2026-I</div>
+        <h1>Calendario</h1>
+        <p>Partidos Finalizados Liga BetPlay.</p>
+      </div>
+
+      <div class="hero-badge">
+        <span>{{ matches|length if matches else 0 }}</span>
+        <small>Partidos</small>
+      </div>
+    </header>
 
     {% if matches %}
-  <div class="match-list">
-    {% for match in matches %}
-      <a href="/match/{{ match.event_id }}" class="match-link">
-        <div class="match-card">
-          <div class="match-top">
-            <div>{{ match.date }} · {{ match.time }}</div>
-            <div>{{ match.tournament_name }}</div>
-          </div>
+      <div class="match-list">
+        {% for match in matches %}
+          <a href="/match/{{ match.event_id }}" class="match-link">
+            <article class="match-card">
+              <div class="match-top">
+                <div>
+                  <div class="tournament">{{ match.tournament_name }}</div>
+                  <div class="date">{{ match.date }} · {{ match.time }}</div>
+                </div>
 
-          <div class="match-main">
-            <div class="teams-row">
-              <div class="team-name">{{ match.home_team }}</div>
-              <div class="vs">vs</div>
-              <div class="team-name">{{ match.away_team }}</div>
-            </div>
+                <div class="status-pill">
+                  Finalizado
+                </div>
+              </div>
 
-            <div class="score {{ match.result_class }}">
-              {{ match.home_score }} : {{ match.away_score }}
-            </div>
-          </div>
-        </div>
-      </a>
-    {% endfor %}
+              <div class="match-main">
+                <div class="team-side">
+                  <div class="team-badge" data-team="{{ match.home_team }}"></div>
+                  <div class="team-name">{{ match.home_team }}</div>
+                </div>
+
+                <div class="score-block">
+                  <div class="score {{ match.result_class }}">
+                    <span>{{ match.home_score }}</span>
+                    <span>:</span>
+                    <span>{{ match.away_score }}</span>
+                  </div>
+                  <div class="vs">VS</div>
+                </div>
+
+                <div class="team-side right">
+                  <div class="team-badge" data-team="{{ match.away_team }}"></div>
+                  <div class="team-name">{{ match.away_team }}</div>
+                </div>
+              </div>
+            </article>
+          </a>
+        {% endfor %}
+      </div>
+    {% else %}
+      <div class="empty">No hay partidos disponibles.</div>
+    {% endif %}
   </div>
-{% else %}
-  <div class="empty">No hay partidos disponibles.</div>
-{% endif %}
+
+  <script>
+    const TEAM_BADGES = {
+      "Atlético Nacional": "https://images.fotmob.com/image_resources/logo/teamlogo/6368.png",
+      "Deportivo Pasto": "https://images.fotmob.com/image_resources/logo/teamlogo/4405.png",
+      "Junior Barranquilla": "https://images.fotmob.com/image_resources/logo/teamlogo/2254.png",
+      "Deportes Tolima": "https://images.fotmob.com/image_resources/logo/teamlogo/1894.png",
+      "América de Cali": "https://images.fotmob.com/image_resources/logo/teamlogo/10280.png",
+      "Once Caldas": "https://images.fotmob.com/image_resources/logo/teamlogo/6024.png",
+      "Internacional de Bogotá": "https://images.fotmob.com/image_resources/logo/teamlogo/47240.png",
+      "Independiente Santa Fe": "https://images.fotmob.com/image_resources/logo/teamlogo/7818.png",
+      "Deportivo Cali": "https://images.fotmob.com/image_resources/logo/teamlogo/6387.png",
+      "Independiente Medellín": "https://images.fotmob.com/image_resources/logo/teamlogo/2528.png",
+      "Atlético Bucaramanga": "https://images.fotmob.com/image_resources/logo/teamlogo/4401.png",
+      "Millonarios": "https://images.fotmob.com/image_resources/logo/teamlogo/4403.png",
+      "Rionegro Águilas Doradas": "https://images.fotmob.com/image_resources/logo/teamlogo/193025.png",
+      "Llaneros FC": "https://images.fotmob.com/image_resources/logo/teamlogo/348397.png",
+      "Fortaleza FC": "https://images.fotmob.com/image_resources/logo/teamlogo/244167.png",
+      "Cúcuta Deportivo": "https://images.fotmob.com/image_resources/logo/teamlogo/6254.png",
+      "Alianza Valledupar FC": "https://images.fotmob.com/image_resources/logo/teamlogo/193029.png",
+      "Jaguares de Córdoba": "https://images.fotmob.com/image_resources/logo/teamlogo/424270.png",
+      "Boyacá Chicó FC": "https://images.fotmob.com/image_resources/logo/teamlogo/6255.png",
+      "Deportivo Pereira": "https://images.fotmob.com/image_resources/logo/teamlogo/4404.png"
+    };
+
+    function initials(name){
+      return String(name || "?")
+        .split(" ")
+        .filter(Boolean)
+        .slice(0, 2)
+        .map(word => word[0])
+        .join("")
+        .toUpperCase();
+    }
+
+    document.querySelectorAll(".team-badge").forEach(badge => {
+      const team = badge.dataset.team;
+      const url = TEAM_BADGES[team];
+
+      if(url){
+        badge.innerHTML = `<img src="${url}" alt="${team}" onerror="this.remove(); this.parentNode.textContent='${initials(team)}'">`;
+      } else {
+        badge.textContent = initials(team);
+      }
+    });
+  </script>
+</body>
+</html>

@@ -1,12 +1,15 @@
 from flask import Flask, jsonify, render_template
 from flask_cors import CORS
-from .api import get_next_match, get_odds, get_lineups, get_main_odds_market_from_markets
+from .api import get_next_match, get_odds, get_main_odds_market_from_markets
 from .db import get_connection
 import os
 import time
+import sqlite3
 
-app = Flask(__name__, static_folder='static', template_folder='templates')
+app = Flask(__name__, static_folder="static", template_folder="templates")
 CORS(app)
+
+TEAM_ID = 6106
 
 
 def compute_result_class(home_team, away_team, home_score, away_score):
@@ -23,6 +26,31 @@ def compute_result_class(home_team, away_team, home_score, away_score):
             result_class = "score-loss"
 
     return result_class
+
+
+def build_lineups_from_rows(lineup_rows):
+    lineups = {"home_xi": [], "away_xi": []}
+
+    for row in lineup_rows:
+        player = {
+            "player_id": row["player_id"],
+            "team_id": row["team_id"],
+            "team_name": row["team_name"],
+            "name": row["player_name"],
+            "shirt_number": row["shirt_number"],
+            "position": row["position"],
+            "rating": row["rating"],
+            "goals": row["goals"],
+            "assists": row["assists"],
+            "has_detail": row["team_id"] == TEAM_ID and row["player_id"] is not None,
+        }
+
+        if row["team_side"] == "home":
+            lineups["home_xi"].append(player)
+        else:
+            lineups["away_xi"].append(player)
+
+    return lineups
 
 
 def get_previous_matches_from_db():
@@ -80,7 +108,17 @@ def get_latest_match_detail_from_db():
     flat_table = [dict(r) for r in cur.fetchall()]
 
     cur.execute("""
-        SELECT team_side, player_name, position, rating
+        SELECT
+            team_side,
+            team_id,
+            team_name,
+            player_id,
+            player_name,
+            shirt_number,
+            position,
+            rating,
+            goals,
+            assists
         FROM lineups
         WHERE event_id = ?
     """, (event_id,))
@@ -95,19 +133,8 @@ def get_latest_match_detail_from_db():
 
     conn.close()
 
-    lineups = {"home_xi": [], "away_xi": []}
-    for row in lineup_rows:
-        player = {
-            "name": row["player_name"],
-            "position": row["position"],
-            "rating": row["rating"],
-        }
-        if row["team_side"] == "home":
-            lineups["home_xi"].append(player)
-        else:
-            lineups["away_xi"].append(player)
-
     stats_by_period = {"TOTAL": [], "1T": [], "2T": []}
+
     for row in stat_rows:
         stats_by_period.setdefault(row["period"], []).append({
             "name": row["stat_name"],
@@ -121,7 +148,7 @@ def get_latest_match_detail_from_db():
         "time": match["time"],
         "match_info": dict(match),
         "flat_table": flat_table,
-        "lineups": lineups,
+        "lineups": build_lineups_from_rows(lineup_rows),
         "stats_by_period": stats_by_period,
     }
 
@@ -147,7 +174,17 @@ def get_match_detail_from_db(event_id):
     flat_table = [dict(r) for r in cur.fetchall()]
 
     cur.execute("""
-        SELECT team_side, player_name, position, rating
+        SELECT
+            team_side,
+            team_id,
+            team_name,
+            player_id,
+            player_name,
+            shirt_number,
+            position,
+            rating,
+            goals,
+            assists
         FROM lineups
         WHERE event_id = ?
     """, (event_id,))
@@ -162,19 +199,8 @@ def get_match_detail_from_db(event_id):
 
     conn.close()
 
-    lineups = {"home_xi": [], "away_xi": []}
-    for row in lineup_rows:
-        player = {
-            "name": row["player_name"],
-            "position": row["position"],
-            "rating": row["rating"],
-        }
-        if row["team_side"] == "home":
-            lineups["home_xi"].append(player)
-        else:
-            lineups["away_xi"].append(player)
-
     stats_by_period = {"TOTAL": [], "1T": [], "2T": []}
+
     for row in stat_rows:
         stats_by_period.setdefault(row["period"], []).append({
             "name": row["stat_name"],
@@ -188,9 +214,10 @@ def get_match_detail_from_db(event_id):
         "time": match["time"],
         "match_info": dict(match),
         "flat_table": flat_table,
-        "lineups": lineups,
+        "lineups": build_lineups_from_rows(lineup_rows),
         "stats_by_period": stats_by_period,
     }
+
 
 def get_last_used_lineup_for_team(team_id):
     conn = get_connection()
@@ -229,6 +256,7 @@ def get_last_used_lineup_for_team(team_id):
     conn.close()
 
     return rows
+
 
 @app.route("/")
 def index():
@@ -271,8 +299,10 @@ def last_match_detail():
 @app.route("/api/match/<int:event_id>")
 def match_detail_api(event_id):
     detail = get_match_detail_from_db(event_id)
+
     if not detail:
         return jsonify({"error": "not found"}), 404
+
     return jsonify(detail)
 
 
@@ -314,22 +344,32 @@ def tabla_api():
 
     return jsonify({"table": rows})
 
+
 @app.route("/estadisticas")
 def estadisticas():
     return render_template("estadisticas.html")
 
-
 @app.route("/api/estadisticas")
-def estadisticas_api():
+def api_estadisticas():
     conn = get_connection()
+    conn.row_factory = sqlite3.Row
     cur = conn.cursor()
 
-    cur.execute("""
-        SELECT event_id, home_team, away_team, home_score, away_score, start_time
+    matches = cur.execute("""
+        SELECT
+            home_team,
+            away_team,
+            home_team_id,
+            away_team_id,
+            home_score,
+            away_score,
+            start_time
         FROM matches
+        WHERE home_score IS NOT NULL
+          AND away_score IS NOT NULL
+          AND (home_team_id = 6106 OR away_team_id = 6106)
         ORDER BY start_time ASC
-    """)
-    matches = [dict(r) for r in cur.fetchall()]
+    """).fetchall()
 
     if not matches:
         conn.close()
@@ -349,12 +389,16 @@ def estadisticas_api():
     recent_form = []
 
     for m in matches:
-        nac_is_home = m["home_team"] == "Atlético Nacional"
+        nac_is_home = m["home_team_id"] == 6106
+
         nac_score = m["home_score"] if nac_is_home else m["away_score"]
         opp_score = m["away_score"] if nac_is_home else m["home_score"]
 
-        goals_for += nac_score or 0
-        goals_against += opp_score or 0
+        nac_score = nac_score or 0
+        opp_score = opp_score or 0
+
+        goals_for += nac_score
+        goals_against += opp_score
 
         if nac_score > opp_score:
             wins += 1
@@ -368,31 +412,106 @@ def estadisticas_api():
 
     points = wins * 3 + draws
 
-    cur.execute("""
+    player_rows = cur.execute("""
         SELECT
-            player_name,
-            COUNT(*) AS appearances,
-            ROUND(AVG(rating), 2) AS avg_rating
-        FROM lineups
-        WHERE team_id = 6106 AND rating IS NOT NULL
-        GROUP BY player_name
-        ORDER BY avg_rating DESC, appearances DESC
-        LIMIT 8
-    """)
-    top_players = [dict(r) for r in cur.fetchall()]
+            l.player_name,
+            COALESCE(s.position, MAX(l.position)) AS position,
+            COUNT(l.id) AS appearances,
+            ROUND(AVG(l.rating), 2) AS avg_rating,
 
-    cur.execute("""
-        SELECT
-            player_name,
-            MAX(position) AS position,
-            COUNT(*) AS appearances,
-            ROUND(AVG(rating), 2) AS avg_rating
-        FROM lineups
-        WHERE team_id = 6106
-        GROUP BY player_name
-        ORDER BY player_name ASC
-    """)
-    players = [dict(r) for r in cur.fetchall()]
+            COALESCE(s.goals, 0) AS goals,
+            COALESCE(s.assists, 0) AS assists,
+            COALESCE(s.goals_assists, 0) AS goals_assists,
+
+            COALESCE(s.xg_scored, 0) AS xg_scored,
+            COALESCE(s.xa_assisted, 0) AS xa_assisted,
+            COALESCE(s.xg_xa, 0) AS xg_xa,
+
+            COALESCE(s.penalty_goals, 0) AS penalty_goals,
+            COALESCE(s.penalties_taken, 0) AS penalties_taken,
+
+            COALESCE(s.big_chances_missed, 0) AS big_chances_missed,
+            COALESCE(s.big_chances_created, 0) AS big_chances_created,
+
+            COALESCE(s.accurate_passes_per_match, 0) AS accurate_passes_per_match,
+            COALESCE(s.accurate_passes_pct, 0) AS accurate_passes_pct,
+
+            COALESCE(s.key_passes_per_match, 0) AS key_passes_per_match,
+            COALESCE(s.successful_dribbles_per_match, 0) AS successful_dribbles_per_match,
+            COALESCE(s.successful_dribbles_pct, 0) AS successful_dribbles_pct,
+
+            COALESCE(s.penalties_won, 0) AS penalties_won,
+
+            COALESCE(s.tackles_per_match, 0) AS tackles_per_match,
+            COALESCE(s.interceptions_per_match, 0) AS interceptions_per_match,
+            COALESCE(s.clearances_per_match, 0) AS clearances_per_match,
+            COALESCE(s.defensive_contributions_per_match, 0) AS defensive_contributions_per_match,
+
+            COALESCE(s.dispossessed_per_match, 0) AS dispossessed_per_match,
+
+            COALESCE(s.yellow_cards, 0) AS yellow_cards,
+            COALESCE(s.red_cards, 0) AS red_cards
+
+        FROM lineups l
+        LEFT JOIN season_player_stats s
+            ON s.player_name = l.player_name
+           AND s.season_name = '2026-I'
+
+        WHERE l.team_id = 6106
+          AND l.player_name IS NOT NULL
+
+        GROUP BY l.player_name
+        ORDER BY avg_rating DESC, appearances DESC
+    """).fetchall()
+
+    players = []
+
+    for row in player_rows:
+        players.append({
+            "player_name": row["player_name"],
+            "position": row["position"],
+            "appearances": row["appearances"] or 0,
+            "avg_rating": row["avg_rating"] or 0,
+
+            "goals": row["goals"] or 0,
+            "assists": row["assists"] or 0,
+            "goals_assists": row["goals_assists"] or 0,
+
+            "xg_scored": row["xg_scored"] or 0,
+            "xa_assisted": row["xa_assisted"] or 0,
+            "xg_xa": row["xg_xa"] or 0,
+
+            "penalty_goals": row["penalty_goals"] or 0,
+            "penalties_taken": row["penalties_taken"] or 0,
+
+            "big_chances_missed": row["big_chances_missed"] or 0,
+            "big_chances_created": row["big_chances_created"] or 0,
+
+            "accurate_passes_per_match": row["accurate_passes_per_match"] or 0,
+            "accurate_passes_pct": row["accurate_passes_pct"] or 0,
+
+            "key_passes_per_match": row["key_passes_per_match"] or 0,
+            "successful_dribbles_per_match": row["successful_dribbles_per_match"] or 0,
+            "successful_dribbles_pct": row["successful_dribbles_pct"] or 0,
+
+            "penalties_won": row["penalties_won"] or 0,
+
+            "tackles_per_match": row["tackles_per_match"] or 0,
+            "interceptions_per_match": row["interceptions_per_match"] or 0,
+            "clearances_per_match": row["clearances_per_match"] or 0,
+            "defensive_contributions_per_match": row["defensive_contributions_per_match"] or 0,
+
+            "dispossessed_per_match": row["dispossessed_per_match"] or 0,
+
+            "yellow_cards": row["yellow_cards"] or 0,
+            "red_cards": row["red_cards"] or 0,
+        })
+
+    top_players = sorted(
+        players,
+        key=lambda p: (p["avg_rating"], p["appearances"]),
+        reverse=True
+    )[:8]
 
     conn.close()
 
@@ -417,6 +536,7 @@ def estadisticas_api():
 @app.route("/plantel")
 def plantel():
     return render_template("plantel.html")
+
 
 @app.route("/api/plantel")
 def plantel_api():
@@ -453,7 +573,6 @@ def plantel_api():
 
     for player in players:
         name = player.get("player_name") or ""
-
         image_url = HEADSHOTS.get(name)
 
         if not image_url:
@@ -466,9 +585,11 @@ def plantel_api():
 
     return jsonify({"players": players})
 
+
 @app.route("/next-match")
 def next_match_page():
     return render_template("next_match.html")
+
 
 @app.route("/api/next-match/detail")
 def next_match_detail():
@@ -478,7 +599,6 @@ def next_match_detail():
         return jsonify({"error": "No next match found"}), 404
 
     event_id = next_match.get("event_id")
-
     odds = {"choices": []}
 
     if event_id:
@@ -489,7 +609,7 @@ def next_match_detail():
         except Exception as e:
             print("Error fetching odds:", e)
 
-    nacional_last_xi = get_last_used_lineup_for_team(6106)
+    nacional_last_xi = get_last_used_lineup_for_team(TEAM_ID)
 
     return jsonify({
         "match": next_match,
@@ -497,20 +617,11 @@ def next_match_detail():
         "nacional_last_xi": nacional_last_xi
     })
 
+
 @app.route("/api/top-performer-last-five")
 def top_performer_last_five():
     conn = get_connection()
     cur = conn.cursor()
-
-    # Check which columns exist in lineups, so this won't break if goals/assists don't exist yet
-    cur.execute("PRAGMA table_info(lineups)")
-    lineup_columns = {row["name"] for row in cur.fetchall()}
-
-    has_goals = "goals" in lineup_columns
-    has_assists = "assists" in lineup_columns
-
-    goals_expr = "COALESCE(SUM(goals), 0)" if has_goals else "0"
-    assists_expr = "COALESCE(SUM(assists), 0)" if has_assists else "0"
 
     cur.execute("""
         SELECT event_id
@@ -532,8 +643,8 @@ def top_performer_last_five():
             MAX(position) AS position,
             COUNT(*) AS matches_played,
             ROUND(AVG(rating), 2) AS avg_rating,
-            {goals_expr} AS goals,
-            {assists_expr} AS assists
+            COALESCE(SUM(goals), 0) AS goals,
+            COALESCE(SUM(assists), 0) AS assists
         FROM lineups
         WHERE team_id = 6106
           AND rating IS NOT NULL
@@ -585,6 +696,62 @@ def top_performer_last_five():
     player["image_url"] = image_url
 
     return jsonify({"player": player})
+
+
+@app.route("/api/match/<int:event_id>/player/<int:player_id>")
+def match_player_detail_api(event_id, player_id):
+    conn = get_connection()
+    cur = conn.cursor()
+
+    cur.execute("""
+        SELECT
+            player_id,
+            player_name,
+            position,
+            rating,
+            team_id,
+            team_name,
+            shirt_number,
+            goals,
+            assists
+        FROM lineups
+        WHERE event_id = ?
+          AND player_id = ?
+          AND team_id = 6106
+        LIMIT 1
+    """, (event_id, player_id))
+
+    player = cur.fetchone()
+
+    if not player:
+        conn.close()
+        return jsonify({"error": "Player not found"}), 404
+
+    cur.execute("""
+        SELECT stat_name, stat_value, stat_group
+        FROM player_match_stats
+        WHERE event_id = ?
+          AND player_id = ?
+          AND team_id = 6106
+        ORDER BY stat_group, stat_name
+    """, (event_id, player_id))
+
+    stats = [dict(r) for r in cur.fetchall()]
+    conn.close()
+
+    return jsonify({
+        "player_id": player["player_id"],
+        "name": player["player_name"],
+        "position": player["position"],
+        "rating": player["rating"],
+        "team_id": player["team_id"],
+        "team_name": player["team_name"],
+        "shirt_number": player["shirt_number"],
+        "goals": player["goals"],
+        "assists": player["assists"],
+        "stats": stats
+    })
+
 
 if __name__ == "__main__":
     app.run(debug=True, host="0.0.0.0", port=int(os.environ.get("PORT", 5000)))
