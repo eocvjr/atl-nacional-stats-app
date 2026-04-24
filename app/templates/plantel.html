@@ -7,28 +7,24 @@
   <style>
     :root{
       --bg:#050b09;
-      --bg-soft:#08110d;
       --card:linear-gradient(180deg, rgba(13,22,18,.96), rgba(5,10,8,.98));
       --card-alt:linear-gradient(180deg, rgba(16,28,22,.96), rgba(7,12,10,.98));
-      --border:rgba(125, 240, 177, 0.12);
-      --border-strong:rgba(125, 240, 177, 0.22);
+      --border:rgba(125,240,177,.12);
+      --border-strong:rgba(125,240,177,.22);
       --text:#eefbf3;
       --muted:#8fa59a;
       --green:#00c26a;
       --green-2:#7df0b1;
-      --green-soft:rgba(0,194,106,0.12);
       --shadow:0 20px 50px rgba(0,0,0,.38);
     }
 
-    *{
-      box-sizing:border-box;
-    }
+    *{ box-sizing:border-box; }
 
     body{
       margin:0;
       font-family:Arial, sans-serif;
       background:
-        radial-gradient(circle at top left, rgba(0,194,106,0.12), transparent 24%),
+        radial-gradient(circle at top left, rgba(0,194,106,.12), transparent 24%),
         linear-gradient(135deg, #04100b 0%, #05090b 45%, #020507 100%);
       color:var(--text);
       padding:28px;
@@ -45,7 +41,6 @@
       color:var(--green-2);
       text-decoration:none;
       font-size:14px;
-      opacity:.95;
     }
 
     .hero{
@@ -70,12 +65,10 @@
       font-size:52px;
       line-height:1.04;
       font-weight:900;
-      letter-spacing:-0.03em;
+      letter-spacing:-.03em;
     }
 
-    h1 span{
-      color:#d7f5e3;
-    }
+    h1 span{ color:#d7f5e3; }
 
     .subtitle{
       margin-top:10px;
@@ -130,7 +123,7 @@
       gap:10px;
       padding:14px 16px;
       border-radius:18px;
-      background:rgba(0,0,0,0.45);
+      background:rgba(0,0,0,.45);
       border:1px solid var(--border);
       box-shadow:var(--shadow);
     }
@@ -161,13 +154,8 @@
       box-shadow:var(--shadow);
     }
 
-    .group-block{
-      margin-bottom:36px;
-    }
-
-    .group-block:last-child{
-      margin-bottom:0;
-    }
+    .group-block{ margin-bottom:36px; }
+    .group-block:last-child{ margin-bottom:0; }
 
     .group-header{
       display:flex;
@@ -195,7 +183,7 @@
       padding:0 12px;
       border-radius:12px;
       border:1px solid var(--border-strong);
-      background:rgba(255,255,255,0.03);
+      background:rgba(255,255,255,.03);
       color:#d9f7e5;
       font-size:15px;
       font-weight:800;
@@ -208,22 +196,20 @@
     }
 
     .player-card{
-      position:relative;
-      overflow:hidden;
       min-height:250px;
       padding:18px;
       border-radius:24px;
       background:
-        radial-gradient(circle at top center, rgba(0,194,106,0.12), transparent 42%),
+        radial-gradient(circle at top center, rgba(0,194,106,.12), transparent 42%),
         var(--card-alt);
-      border:1px solid rgba(125,240,177,0.10);
+      border:1px solid rgba(125,240,177,.10);
       box-shadow:0 14px 36px rgba(0,0,0,.34);
       transition:transform .18s ease, border-color .18s ease, box-shadow .18s ease;
     }
 
     .player-card:hover{
       transform:translateY(-4px);
-      border-color:rgba(125,240,177,0.22);
+      border-color:rgba(125,240,177,.22);
       box-shadow:0 22px 42px rgba(0,0,0,.44);
     }
 
@@ -242,6 +228,7 @@
       display:flex;
       align-items:center;
       justify-content:center;
+      overflow:hidden;
       background:linear-gradient(180deg, #1ce38b, #029653);
       color:#04100b;
       font-size:26px;
@@ -250,11 +237,18 @@
       flex-shrink:0;
     }
 
+    .player-avatar img{
+      width:100%;
+      height:100%;
+      object-fit:cover;
+      display:block;
+    }
+
     .position-badge{
       padding:8px 12px;
       border-radius:12px;
-      background:rgba(255,255,255,0.05);
-      border:1px solid rgba(125,240,177,0.14);
+      background:rgba(255,255,255,.05);
+      border:1px solid rgba(125,240,177,.14);
       color:#d4fbe2;
       font-size:12px;
       font-weight:800;
@@ -263,9 +257,7 @@
       white-space:nowrap;
     }
 
-    .player-main{
-      margin-top:8px;
-    }
+    .player-main{ margin-top:8px; }
 
     .player-name{
       font-size:28px;
@@ -273,7 +265,7 @@
       line-height:1.08;
       margin-bottom:8px;
       color:#f4fff8;
-      letter-spacing:-0.02em;
+      letter-spacing:-.02em;
     }
 
     .player-sub{
@@ -287,7 +279,7 @@
 
     .player-divider{
       height:1px;
-      background:linear-gradient(90deg, rgba(125,240,177,0.16), rgba(125,240,177,0.04));
+      background:linear-gradient(90deg, rgba(125,240,177,.16), rgba(125,240,177,.04));
       margin:16px 0;
     }
 
@@ -300,8 +292,8 @@
     .stat{
       padding:12px;
       border-radius:16px;
-      background:rgba(255,255,255,0.03);
-      border:1px solid rgba(125,240,177,0.08);
+      background:rgba(255,255,255,.03);
+      border:1px solid rgba(125,240,177,.08);
     }
 
     .stat-value{
@@ -328,53 +320,23 @@
     }
 
     @media (max-width: 1250px){
-      .group-grid{
-        grid-template-columns:repeat(3, minmax(0,1fr));
-      }
+      .group-grid{ grid-template-columns:repeat(3, minmax(0,1fr)); }
     }
 
     @media (max-width: 950px){
-      body{
-        padding:20px;
-      }
-
-      h1{
-        font-size:40px;
-      }
-
-      .summary-value{
-        font-size:38px;
-      }
-
-      .group-grid{
-        grid-template-columns:repeat(2, minmax(0,1fr));
-      }
+      body{ padding:20px; }
+      h1{ font-size:40px; }
+      .summary-value{ font-size:38px; }
+      .group-grid{ grid-template-columns:repeat(2, minmax(0,1fr)); }
     }
 
     @media (max-width: 640px){
-      body{
-        padding:16px;
-      }
-
-      h1{
-        font-size:32px;
-      }
-
-      .hero-right{
-        width:100%;
-      }
-
-      .summary-box{
-        flex:1;
-      }
-
-      .group-grid{
-        grid-template-columns:1fr;
-      }
-
-      .player-name{
-        font-size:24px;
-      }
+      body{ padding:16px; }
+      h1{ font-size:32px; }
+      .hero-right{ width:100%; }
+      .summary-box{ flex:1; }
+      .group-grid{ grid-template-columns:1fr; }
+      .player-name{ font-size:24px; }
     }
   </style>
 </head>
@@ -415,184 +377,6 @@
     </div>
   </div>
 
-  <script>
-    let ALL_PLAYERS = [];
-
-    async function fetchJSON(url){
-      const res = await fetch(url);
-      if(!res.ok) throw new Error('HTTP ' + res.status);
-      return res.json();
-    }
-
-    function initials(name){
-      if(!name) return '--';
-      const parts = name.trim().split(/\s+/).filter(Boolean);
-      if(parts.length === 1) return parts[0].slice(0,2).toUpperCase();
-      return (parts[0][0] + parts[1][0]).toUpperCase();
-    }
-
-    function normalizeGroup(position){
-      const pos = (position || '').toUpperCase().trim();
-
-      if(['POR', 'GK', 'G'].includes(pos)) return 'POR';
-      if(['DEF', 'DF', 'D', 'CB', 'LB', 'RB', 'LWB', 'RWB'].includes(pos)) return 'DEF';
-      if(['MED', 'MF', 'M', 'DM', 'CM', 'AM', 'LM', 'RM'].includes(pos)) return 'MED';
-      if(['DEL', 'FW', 'F', 'ST', 'CF', 'LW', 'RW'].includes(pos)) return 'DEL';
-
-      return 'OTROS';
-    }
-
-    function positionLabel(position){
-      return normalizeGroup(position);
-    }
-
-    function updateSummary(players){
-      const totalEl = document.getElementById('total-players');
-      const avgEl = document.getElementById('avg-rating');
-
-      totalEl.textContent = players.length;
-
-      const ratings = players
-        .map(p => p.avg_rating)
-        .filter(v => v !== null && v !== undefined && v !== '');
-
-      if(ratings.length){
-        const avg = ratings.reduce((a,b) => a + Number(b), 0) / ratings.length;
-        avgEl.textContent = avg.toFixed(2);
-      } else {
-        avgEl.textContent = '-';
-      }
-    }
-
-    function playerCardHTML(player){
-      return `
-        <div class="player-card">
-          <div class="player-top">
-            <div class="player-avatar">${initials(player.player_name)}</div>
-            <div class="position-badge">${positionLabel(player.position)}</div>
-          </div>
-
-          <div class="player-main">
-            <div class="player-name">${player.player_name}</div>
-            <div class="player-sub">${positionLabel(player.position)}</div>
-          </div>
-
-          <div class="player-divider"></div>
-
-          <div class="stats-row">
-            <div class="stat">
-              <div class="stat-value">${player.appearances ?? '-'}</div>
-              <div class="stat-label">Apariciones</div>
-            </div>
-            <div class="stat">
-              <div class="stat-value">${player.avg_rating ?? '-'}</div>
-              <div class="stat-label">Rating promedio</div>
-            </div>
-          </div>
-        </div>
-      `;
-    }
-
-    function renderPlayers(players){
-      const container = document.getElementById('players-groups');
-      const empty = document.getElementById('empty-state');
-
-      container.innerHTML = '';
-
-      if(!players || !players.length){
-        empty.style.display = 'block';
-        updateSummary([]);
-        return;
-      }
-
-      empty.style.display = 'none';
-      updateSummary(players);
-
-      const grouped = {
-        POR: [],
-        DEF: [],
-        MED: [],
-        DEL: [],
-        OTROS: []
-      };
-
-      players.forEach(player => {
-        grouped[normalizeGroup(player.position)].push(player);
-      });
-
-      const order = ['POR', 'DEF', 'MED', 'DEL'];
-
-      order.forEach(groupName => {
-        if(!grouped[groupName].length) return;
-
-        const block = document.createElement('section');
-        block.className = 'group-block';
-
-        const groupPlayers = grouped[groupName];
-
-        const titleMap = {
-          POR: 'Porteros',
-          DEF: 'Defensas',
-          MED: 'Mediocampistas',
-          DEL: 'Delanteros'
-        };
-
-        block.innerHTML = `
-          <div class="group-header">
-            <h2 class="group-title">${titleMap[groupName]}</h2>
-            <div class="group-count">${groupPlayers.length}</div>
-          </div>
-          <div class="group-grid">
-            ${groupPlayers.map(playerCardHTML).join('')}
-          </div>
-        `;
-
-        container.appendChild(block);
-      });
-
-      if(grouped.OTROS.length){
-        const block = document.createElement('section');
-        block.className = 'group-block';
-
-        block.innerHTML = `
-          <div class="group-header">
-            <h2 class="group-title">Otros</h2>
-            <div class="group-count">${grouped.OTROS.length}</div>
-          </div>
-          <div class="group-grid">
-            ${grouped.OTROS.map(playerCardHTML).join('')}
-          </div>
-        `;
-
-        container.appendChild(block);
-      }
-    }
-
-    function applyFilters(){
-      const search = document.getElementById('player-search').value.trim().toLowerCase();
-
-      const filtered = ALL_PLAYERS.filter(player => {
-        return !search || (player.player_name || '').toLowerCase().includes(search);
-      });
-
-      renderPlayers(filtered);
-    }
-
-    async function initPlantel(){
-      try {
-        const data = await fetchJSON('/api/plantel');
-        ALL_PLAYERS = data.players || [];
-        renderPlayers(ALL_PLAYERS);
-
-        document.getElementById('player-search').addEventListener('input', applyFilters);
-      } catch (err) {
-        console.error(err);
-        document.getElementById('empty-state').style.display = 'block';
-        document.getElementById('empty-state').textContent = 'No se pudo cargar el plantel.';
-      }
-    }
-
-    document.addEventListener('DOMContentLoaded', initPlantel);
-  </script>
+  <script src="/static/plantel.js"></script>
 </body>
 </html>

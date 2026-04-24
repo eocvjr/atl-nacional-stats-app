@@ -17,6 +17,48 @@ function shortName(name){
   return (parts[0][0] + (parts[1]?.[0] || '')).toUpperCase();
 }
 
+function normalizeText(value){
+  return String(value || "")
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .toLowerCase();
+}
+
+function findPlayerImage(playerName){
+  const normalizedName = normalizeText(playerName);
+
+  for(const [key, data] of Object.entries(PLAYER_IMAGES)){
+    const normalizedKey = normalizeText(key);
+
+    if(normalizedName.includes(normalizedKey)){
+      return data;
+    }
+  }
+
+  return null;
+}
+
+function playerAvatarHTML(player){
+  const name = player?.name || "";
+  const match = findPlayerImage(name);
+  const fallbackInitials = match?.initials || shortName(name);
+  const imageUrl = player?.image_url || match?.img;
+
+  if(imageUrl){
+    return `
+      <div class="avatar green">
+        <img
+          src="${imageUrl}"
+          alt="${name}"
+          onerror="this.remove(); this.parentNode.textContent='${fallbackInitials}'"
+        >
+      </div>
+    `;
+  }
+
+  return `<div class="avatar green">${fallbackInitials}</div>`;
+}
+
 function classifyResult(m){
   const nacIsHome = m.home_team === 'Atlético Nacional';
   const nacScore = nacIsHome ? m.home_score : m.away_score;
@@ -33,6 +75,125 @@ function percentFromRating(r){
   const c = Math.max(5, Math.min(10, v)); // clamp 5–10
   return ((c - 5) / 5) * 100;            // 0–100
 }
+
+const PLAYER_IMAGES = {
+  Ospina: {
+    img: "https://images.fotmob.com/image_resources/playerimages/50065.png",
+    initials: "DO"
+  },
+  Castillo: {
+    img: "https://images.fotmob.com/image_resources/playerimages/1435218.png",
+    initials: "HC"
+  },
+  Cataño: {
+    img: "https://images.fotmob.com/image_resources/playerimages/1886618.png",
+    initials: "KC"
+  },
+  Castaño: {
+    img: "https://images.fotmob.com/image_resources/playerimages/1886618.png",
+    initials: "KC"
+  },
+  Roman: {
+    img: "https://images.fotmob.com/image_resources/playerimages/925847.png",
+    initials: "AR"
+  },
+  Román: {
+    img: "https://images.fotmob.com/image_resources/playerimages/925847.png",
+    initials: "AR"
+  },
+  Casco: {
+    img: "https://images.fotmob.com/image_resources/playerimages/174813.png",
+    initials: "MC"
+  },
+  Garcia: {
+    img: "https://images.fotmob.com/image_resources/playerimages/1579303.png",
+    initials: "SG"
+  },
+  García: {
+    img: "https://images.fotmob.com/image_resources/playerimages/1579303.png",
+    initials: "SG"
+  },
+  Haydar: {
+    img: "https://images.fotmob.com/image_resources/playerimages/1139171.png",
+    initials: "CH"
+  },
+  Tesillo: {
+    img: "https://images.fotmob.com/image_resources/playerimages/207383.png",
+    initials: "WT"
+  },
+  Parra: {
+    img: "https://www.fotmob.com/img/player-fallback-dark.png",
+    initials: "NP"
+  },
+  Velasquez: {
+    img: "https://images.fotmob.com/image_resources/playerimages/1433031.png",
+    initials: "SV"
+  },
+  Velásquez: {
+    img: "https://images.fotmob.com/image_resources/playerimages/1433031.png",
+    initials: "SV"
+  },
+  "Cristian Uribe": {
+    img: "https://images.fotmob.com/image_resources/playerimages/1714944.png",
+    initials: "CU"
+  },
+  Rengifo: {
+    img: "https://images.fotmob.com/image_resources/playerimages/1798773.png",
+    initials: "JM"
+  },
+  "Matheus Uribe": {
+    img: "https://images.fotmob.com/image_resources/playerimages/320618.png",
+    initials: "MU"
+  },
+  Sarmiento: {
+    img: "https://images.fotmob.com/image_resources/playerimages/942987.png",
+    initials: "AS"
+  },
+  Campuzano: {
+    img: "https://images.fotmob.com/image_resources/playerimages/922875.png",
+    initials: "JC"
+  },
+  Cardona: {
+    img: "https://images.fotmob.com/image_resources/playerimages/177507.png",
+    initials: "EC"
+  },
+  Rodriguez: {
+    img: "https://images.fotmob.com/image_resources/playerimages/1460577.png",
+    initials: "NR"
+  },
+  Rodríguez: {
+    img: "https://images.fotmob.com/image_resources/playerimages/1460577.png",
+    initials: "NR"
+  },
+  Zapata: {
+    img: "https://images.fotmob.com/image_resources/playerimages/1199834.png",
+    initials: "JZ"
+  },
+  Moreno: {
+    img: "https://images.fotmob.com/image_resources/playerimages/677249.png",
+    initials: "MM"
+  },
+  Arango: {
+    img: "https://images.fotmob.com/image_resources/playerimages/452368.png",
+    initials: "CA"
+  },
+  Bello: {
+    img: "https://images.fotmob.com/image_resources/playerimages/495825.png",
+    initials: "EB"
+  },
+  Lozano: {
+    img: "https://images.fotmob.com/image_resources/playerimages/1895028.png",
+    initials: "ML"
+  },
+  Morelos: {
+    img: "https://images.fotmob.com/image_resources/playerimages/579660.png",
+    initials: "AM"
+  },
+  Asprilla: {
+    img: "https://images.fotmob.com/image_resources/playerimages/425783.png",
+    initials: "DA"
+  }
+};
 
 // --------- COLORES POR RATING ---------
 function getRatingColor(r){
@@ -190,25 +351,24 @@ function renderPlayers(detail, side = 'home'){
   }
 
   xi.forEach(p => {
-    const initials = shortName(p.name);
-    const pct = percentFromRating(p.rating);
-    const { bar, text } = getRatingColor(p.rating);
+  const pct = percentFromRating(p.rating);
+  const { bar, text } = getRatingColor(p.rating);
 
-    const row = document.createElement('div');
-    row.className = 'player';
-    row.innerHTML = `
-      <div class="name">
-        <div class="avatar green">${initials}</div>
-        <div class="player-meta">
-          ${p.name}
-          <span class="role">${p.position || ''}</span>
-        </div>
+  const row = document.createElement('div');
+  row.className = 'player';
+  row.innerHTML = `
+    <div class="name">
+      ${playerAvatarHTML(p)}
+      <div class="player-meta">
+        ${p.name}
+        <span class="role">${p.position || ''}</span>
       </div>
-      <div class="bar"><i style="width:${pct}%; background:${bar};"></i></div>
-      <div class="rating-value" style="color:${text};">${p.rating ?? '-'}</div>
-    `;
-    list.appendChild(row);
-  });
+    </div>
+    <div class="bar"><i style="width:${pct}%; background:${bar};"></i></div>
+    <div class="rating-value" style="color:${text};">${p.rating ?? '-'}</div>
+  `;
+  list.appendChild(row);
+});
 }
 
 // --------- INIT ---------
@@ -409,6 +569,4 @@ async function initTabla(){
       '<div class="state-msg">Error al cargar la tabla. Revisá la consola.</div>';
     document.getElementById('table-updated').textContent = 'Error de conexión';
   }
-}
-
-document.addEventListener('DOMContentLoaded', initTabla);
+} 

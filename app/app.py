@@ -425,6 +425,32 @@ def plantel_api():
 
     conn.close()
 
+    HEADSHOTS = {
+        "David Ospina": "https://images.fotmob.com/image_resources/playerimages/50065.png",
+        "Harlen Castillo": "https://images.fotmob.com/image_resources/playerimages/1435218.png",
+        "Kevin Castaño": "https://images.fotmob.com/image_resources/playerimages/1886618.png",
+    }
+
+    LAST_NAME_HEADSHOTS = {
+        "Ospina": "https://images.fotmob.com/image_resources/playerimages/50065.png",
+        "Castillo": "https://images.fotmob.com/image_resources/playerimages/1435218.png",
+        "Castaño": "https://images.fotmob.com/image_resources/playerimages/1886618.png",
+        "Cataño": "https://images.fotmob.com/image_resources/playerimages/1886618.png",
+    }
+
+    for player in players:
+        name = player.get("player_name") or ""
+
+        image_url = HEADSHOTS.get(name)
+
+        if not image_url:
+            for last_name, url in LAST_NAME_HEADSHOTS.items():
+                if last_name.lower() in name.lower():
+                    image_url = url
+                    break
+
+        player["image_url"] = image_url
+
     return jsonify({"players": players})
 
 if __name__ == "__main__":
