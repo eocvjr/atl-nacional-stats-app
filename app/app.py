@@ -192,6 +192,43 @@ def get_match_detail_from_db(event_id):
         "stats_by_period": stats_by_period,
     }
 
+def get_last_used_lineup_for_team(team_id):
+    conn = get_connection()
+    cur = conn.cursor()
+
+    cur.execute("""
+        SELECT event_id
+        FROM matches
+        ORDER BY start_time DESC
+        LIMIT 1
+    """)
+    latest = cur.fetchone()
+
+    if not latest:
+        conn.close()
+        return []
+
+    event_id = latest["event_id"]
+
+    cur.execute("""
+        SELECT player_name, position, rating
+        FROM lineups
+        WHERE event_id = ? AND team_id = ?
+        ORDER BY
+            CASE position
+                WHEN 'POR' THEN 1
+                WHEN 'DEF' THEN 2
+                WHEN 'MED' THEN 3
+                WHEN 'DEL' THEN 4
+                ELSE 5
+            END,
+            player_name ASC
+    """, (event_id, team_id))
+
+    rows = [dict(r) for r in cur.fetchall()]
+    conn.close()
+
+    return rows
 
 @app.route("/")
 def index():
@@ -276,30 +313,6 @@ def tabla_api():
     conn.close()
 
     return jsonify({"table": rows})
-
-
-@app.route("/api/next-match/detail")
-def next_match_detail():
-    next_match = get_next_match()
-    if not next_match:
-        return jsonify({"error": "No next match found"}), 404
-
-    event_id = next_match.get("event_id")
-    if not event_id:
-        return jsonify({"error": "No event ID"}), 404
-
-    time.sleep(0.5)
-    odds = get_odds(event_id)
-    time.sleep(0.5)
-    lineups = get_lineups(event_id)
-
-    main_odds = get_main_odds_market_from_markets(odds)
-
-    return jsonify({
-        "match": next_match,
-        "odds": main_odds,
-        "lineups": lineups,
-    })
 
 @app.route("/estadisticas")
 def estadisticas():
@@ -452,6 +465,126 @@ def plantel_api():
         player["image_url"] = image_url
 
     return jsonify({"players": players})
+
+@app.route("/next-match")
+def next_match_page():
+    return render_template("next_match.html")
+
+@app.route("/api/next-match/detail")
+def next_match_detail():
+    next_match = get_next_match()
+
+    if not next_match:
+        return jsonify({"error": "No next match found"}), 404
+
+    event_id = next_match.get("event_id")
+
+    odds = {"choices": []}
+
+    if event_id:
+        try:
+            time.sleep(0.5)
+            raw_odds = get_odds(event_id)
+            odds = get_main_odds_market_from_markets(raw_odds)
+        except Exception as e:
+            print("Error fetching odds:", e)
+
+    nacional_last_xi = get_last_used_lineup_for_team(6106)
+
+    return jsonify({
+        "match": next_match,
+        "odds": odds,
+        "nacional_last_xi": nacional_last_xi
+    })
+
+@app.route("/api/top-performer-last-five")
+def top_performer_last_five():
+    conn = get_connection()
+    cur = conn.cursor()
+
+    # Check which columns exist in lineups, so this won't break if goals/assists don't exist yet
+    cur.execute("PRAGMA table_info(lineups)")
+    lineup_columns = {row["name"] for row in cur.fetchall()}
+
+    has_goals = "goals" in lineup_columns
+    has_assists = "assists" in lineup_columns
+
+    goals_expr = "COALESCE(SUM(goals), 0)" if has_goals else "0"
+    assists_expr = "COALESCE(SUM(assists), 0)" if has_assists else "0"
+
+    cur.execute("""
+        SELECT event_id
+        FROM matches
+        ORDER BY start_time DESC
+        LIMIT 5
+    """)
+    recent_matches = [row["event_id"] for row in cur.fetchall()]
+
+    if not recent_matches:
+        conn.close()
+        return jsonify({"player": None})
+
+    placeholders = ",".join(["?"] * len(recent_matches))
+
+    query = f"""
+        SELECT
+            player_name,
+            MAX(position) AS position,
+            COUNT(*) AS matches_played,
+            ROUND(AVG(rating), 2) AS avg_rating,
+            {goals_expr} AS goals,
+            {assists_expr} AS assists
+        FROM lineups
+        WHERE team_id = 6106
+          AND rating IS NOT NULL
+          AND event_id IN ({placeholders})
+        GROUP BY player_name
+        HAVING COUNT(*) >= 2
+        ORDER BY avg_rating DESC, matches_played DESC
+        LIMIT 1
+    """
+
+    cur.execute(query, recent_matches)
+    row = cur.fetchone()
+    conn.close()
+
+    if not row:
+        return jsonify({"player": None})
+
+    player = dict(row)
+
+    HEADSHOTS = {
+        "Ospina": "https://images.fotmob.com/image_resources/playerimages/50065.png",
+        "Castillo": "https://images.fotmob.com/image_resources/playerimages/1435218.png",
+        "Cataño": "https://images.fotmob.com/image_resources/playerimages/1886618.png",
+        "Castaño": "https://images.fotmob.com/image_resources/playerimages/1886618.png",
+        "Román": "https://images.fotmob.com/image_resources/playerimages/925847.png",
+        "Roman": "https://images.fotmob.com/image_resources/playerimages/925847.png",
+        "Casco": "https://images.fotmob.com/image_resources/playerimages/174813.png",
+        "García": "https://images.fotmob.com/image_resources/playerimages/1579303.png",
+        "Garcia": "https://images.fotmob.com/image_resources/playerimages/1579303.png",
+        "Tesillo": "https://images.fotmob.com/image_resources/playerimages/207383.png",
+        "Campuzano": "https://images.fotmob.com/image_resources/playerimages/922875.png",
+        "Uribe": "https://images.fotmob.com/image_resources/playerimages/320618.png",
+        "Cardona": "https://images.fotmob.com/image_resources/playerimages/177507.png",
+        "Arango": "https://images.fotmob.com/image_resources/playerimages/452368.png",
+        "Bello": "https://images.fotmob.com/image_resources/playerimages/495825.png",
+        "Morelos": "https://images.fotmob.com/image_resources/playerimages/579660.png",
+        "Asprilla": "https://images.fotmob.com/image_resources/playerimages/425783.png",
+        "Rengifo": "https://images.fotmob.com/image_resources/playerimages/1798773.png",
+    }
+
+    image_url = None
+    name = player.get("player_name") or ""
+
+    for key, url in HEADSHOTS.items():
+        if key.lower() in name.lower():
+            image_url = url
+            break
+
+    player["image_url"] = image_url
+
+    return jsonify({"player": player})
 
 if __name__ == "__main__":
     app.run(debug=True, host="0.0.0.0", port=int(os.environ.get("PORT", 5000)))

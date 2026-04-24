@@ -2,6 +2,7 @@
 const NEXT_MATCH_ENDPOINT        = '/api/next-match';
 const PREVIOUS_MATCHES_ENDPOINT  = '/api/previous-matches';
 const LAST_MATCH_DETAIL_ENDPOINT = '/api/last-match-detail';
+const TOP_PERFORMER_ENDPOINT = '/api/top-performer-last-five';
 
 // --------- HELPERS ---------
 async function fetchJSON(url){
@@ -74,6 +75,19 @@ function percentFromRating(r){
   if(isNaN(v)) return 0;
   const c = Math.max(5, Math.min(10, v)); // clamp 5–10
   return ((c - 5) / 5) * 100;            // 0–100
+}
+
+const COMPETITION_ICONS = {
+  "Primera A, Apertura": "/static/icons/liga-betplay.png",
+  "Primera A, Clausura": "/static/icons/liga-betplay.png",
+  "Liga BetPlay": "/static/icons/liga-betplay.png",
+  "Liga Betplay": "/static/icons/liga-betplay.png",
+  "Copa BetPlay": "/static/icons/liga-betplay.png",
+  "Copa Betplay": "/static/icons/liga-betplay.png"
+};
+
+function getCompetitionIcon(tournamentName){
+  return COMPETITION_ICONS[tournamentName] || "/static/icons/liga-betplay.png";
 }
 
 const PLAYER_IMAGES = {
@@ -195,6 +209,59 @@ const PLAYER_IMAGES = {
   }
 };
 
+function initialsFromName(name){
+  if(!name) return 'AN';
+  const parts = name.trim().split(/\s+/).filter(Boolean);
+  if(parts.length === 1) return parts[0].slice(0,2).toUpperCase();
+  return (parts[0][0] + parts[1][0]).toUpperCase();
+}
+
+function renderTopPerformer(player){
+  const card = document.getElementById('top-performer-card');
+
+  if(!card || !player){
+    if(card) card.style.display = 'none';
+    return;
+  }
+
+  const avatar = document.getElementById('top-performer-avatar');
+  const nameEl = document.getElementById('top-performer-name');
+  const posEl = document.getElementById('top-performer-position');
+  const ratingEl = document.getElementById('top-performer-rating');
+  const matchesEl = document.getElementById('top-performer-matches');
+  const goalsEl = document.getElementById('top-performer-goals');
+  const assistsEl = document.getElementById('top-performer-assists');
+
+  const name = player.player_name || player.name || '-';
+
+  const match = findPlayerImage(name);
+  const fallbackInitials = match?.initials || shortName(name);
+  const imageUrl = player.image_url || match?.img;
+
+  if(avatar){
+    if(imageUrl){
+      avatar.innerHTML = `
+        <img
+          src="${imageUrl}"
+          alt="${name}"
+          onerror="this.remove(); this.parentNode.textContent='${fallbackInitials}'"
+        >
+      `;
+    } else {
+      avatar.textContent = fallbackInitials;
+    }
+  }
+
+  if(nameEl) nameEl.textContent = name;
+  if(posEl) posEl.textContent = player.position || '-';
+  if(ratingEl) ratingEl.textContent = player.avg_rating ?? player.rating ?? '-';
+  if(matchesEl) matchesEl.textContent = player.matches_played ?? '-';
+  if(goalsEl) goalsEl.textContent = player.goals ?? 0;
+  if(assistsEl) assistsEl.textContent = player.assists ?? 0;
+
+  card.style.display = 'block';
+}
+
 // --------- COLORES POR RATING ---------
 function getRatingColor(r){
   const v = parseFloat(r);
@@ -216,6 +283,14 @@ function renderNextMatch(data){
   const venueEl = document.getElementById('nm-venue');
   const posHomeEl = document.getElementById('nm-pos-home');
   const posAwayEl = document.getElementById('nm-pos-away');
+  const nextCard = document.getElementById('next-match-card');
+
+  if (nextCard) {
+    nextCard.style.cursor = 'pointer';
+    nextCard.onclick = () => {
+      window.location.href = '/next-match';
+    };
+  }
 
   if(!data || !data.home_team){
     if (statusEl) statusEl.textContent = 'Sin próximo partido disponible';
@@ -236,7 +311,7 @@ function renderNextMatch(data){
   if (timeEl) timeEl.textContent = data.time || '--:--';
 
   if (venueEl) {
-    venueEl.textContent = `Estadio: ${stadium}`;
+    venueEl.textContent = `${stadium}`;
   }
 
   if (posHomeEl) {
@@ -311,7 +386,13 @@ function renderPrevious(matches){
     div.className = 'match';
     div.innerHTML = `
       <div class="match-opponent">
-        <div class="badge-opponent">${shortName(m.away_team)}</div>
+        <div class="badge-opponent competition-badge">
+        <img
+         src="${getCompetitionIcon(m.tournament_name)}"
+         alt="${m.tournament_name || 'Competición'}"
+         onerror="this.style.display='none'; this.parentNode.textContent='LB';"
+       >
+     </div>
         <div class="match-info">
           <span class="label">${m.date} · ${m.tournament_name}</span>
           <span>${m.home_team} vs ${m.away_team}</span>
@@ -381,6 +462,12 @@ async function initDashboard(){
   }
 
   try {
+  const topPerformerData = await fetchJSON(TOP_PERFORMER_ENDPOINT);
+  renderTopPerformer(topPerformerData.player);
+  } catch (e) {
+  console.error('Error cargando mejor rendimiento:', e);
+  }
+  try {
     const prevMatches = await fetchJSON(PREVIOUS_MATCHES_ENDPOINT);
     renderPrevious(prevMatches);
   } catch (e) {
@@ -441,132 +528,3 @@ async function initDashboard(){
 }
 
 document.addEventListener('DOMContentLoaded', initDashboard);
-
-// --------- HELPERS (iguales al main.js) ---------
-async function fetchJSON(url){
-  const res = await fetch(url);
-  if(!res.ok) throw new Error('HTTP ' + res.status + ' al llamar ' + url);
-  return res.json();
-}
-
-// Calcula diferencia de goles con signo
-function formatDG(gf, ga){
-  if(gf == null || ga == null) return '-';
-  const d = gf - ga;
-  if(d > 0) return '+' + d;
-  return String(d);
-}
-
-// Genera puntos de forma a partir de historial (si el API lo provee)
-// Acepta array de strings ['W','D','L'] o los infiere de los datos
-function formDots(form){
-  if(!form || !form.length) return '';
-  return form.slice(-5).map(r => `<div class="fd ${r}" title="${r === 'W' ? 'Victoria' : r === 'D' ? 'Empate' : 'Derrota'}"></div>`).join('');
-}
-
-// --------- RENDER CHIPS DE NACIONAL ---------
-function renderStats(row){
-  const statsRow = document.getElementById('stats-row');
-  if(!row){ statsRow.style.display = 'none'; return; }
-
-  document.getElementById('s-pos').textContent  = row.position + '°';
-  document.getElementById('s-pts').textContent  = row.points;
-  document.getElementById('s-pj').textContent   = row.played ?? '-';
-
-  const dg = formatDG(row.goals_for, row.goals_against);
-  document.getElementById('s-dg').textContent = dg;
-
-  statsRow.style.display = 'flex';
-}
-
-// --------- RENDER TABLA ---------
-function renderTable(flatTable){
-  const tableBody = document.getElementById('table-body');
-  const updatedEl = document.getElementById('table-updated');
-  tableBody.innerHTML = '';
-
-  if(!flatTable || !flatTable.length){
-    tableBody.innerHTML = '<div class="state-msg">Sin tabla disponible.</div>';
-    return;
-  }
-
-  updatedEl.textContent = `${flatTable.length} equipos · actualizado a la fecha más reciente`;
-
-  // Busca a Nacional para los chips
-  const nac = flatTable.find(r =>
-    r.team_name && r.team_name.toLowerCase().includes('atlético nacional')
-  );
-  renderStats(nac || null);
-
-  flatTable.forEach((row, i) => {
-    const isNacional = row.team_name &&
-      row.team_name.toLowerCase().includes('atlético nacional');
-
-    const pos = row.position ?? (i + 1);
-    const isTop3 = pos <= 3;
-
-    // Badge de posición
-    let posBadgeClass = 'pos-badge';
-    if(isNacional) posBadgeClass += ' nacional';
-    else if(isTop3) posBadgeClass += ' top3';
-
-    // Zona lateral (borde izquierdo por posición)
-    let zoneBorder = '';
-    if(pos <= 4)       zoneBorder = 'border-left:3px solid #00c26a;';
-    else if(pos <= 8)  zoneBorder = 'border-left:3px solid #2196f3;';
-    else if(pos >= flatTable.length - 1) zoneBorder = 'border-left:3px solid #e74c3c;';
-    else               zoneBorder = 'border-left:3px solid transparent;';
-
-    const dg = formatDG(row.goals_for, row.goals_against);
-    const dotsHtml = row.form ? formDots(row.form) : '';
-
-    const div = document.createElement('div');
-    div.className = 'team-row' + (isNacional ? ' highlight' : '');
-    div.style.cssText = zoneBorder;
-    div.style.animationDelay = (i * 30) + 'ms';
-
-    div.innerHTML = `
-      <div class="${posBadgeClass}">${pos}</div>
-
-      <div class="team-name-cell">
-        <span class="name${isNacional ? ' highlight-name' : ''}">${row.team_name}</span>
-      </div>
-
-      <div class="cell">${row.played ?? '-'}</div>
-      <div class="cell">${row.wins ?? '-'}</div>
-      <div class="cell">${row.draws ?? '-'}</div>
-      <div class="cell">${row.losses ?? '-'}</div>
-      <div class="cell hide-mobile">${dg}</div>
-      <div class="cell pts">${row.points ?? '-'}</div>
-    `;
-
-    tableBody.appendChild(div);
-  });
-}
-
-// --------- INIT ---------
-async function initTabla(){
-  try {
-    const data = await fetchJSON(LAST_MATCH_DETAIL_ENDPOINT);
-
-    if(data && data.flat_table){
-      renderTable(data.flat_table);
-    } else {
-      document.getElementById('table-body').innerHTML =
-        '<div class="state-msg">No se encontró la tabla en el endpoint.</div>';
-      document.getElementById('table-updated').textContent = 'Sin datos';
-    }
-
-    // Fecha del último partido (si viene en match_info)
-    if(data && data.match_info && data.match_info.date){
-      document.getElementById('table-date').textContent =
-        'Tras partido del ' + data.match_info.date;
-    }
-
-  } catch(e) {
-    console.error('Error cargando tabla:', e);
-    document.getElementById('table-body').innerHTML =
-      '<div class="state-msg">Error al cargar la tabla. Revisá la consola.</div>';
-    document.getElementById('table-updated').textContent = 'Error de conexión';
-  }
-} 
