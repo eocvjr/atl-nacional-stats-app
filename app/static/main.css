@@ -707,4 +707,279 @@ body{
   .team-name{
     font-size:16px;
   }
+
+/* ===== MOBILE DASHBOARD FIXES ===== */
+
+html,
+body{
+  max-width:100%;
+  overflow-x:hidden;
+}
+
+@media (max-width: 768px){
+  body{
+    overflow-x:hidden;
+  }
+
+  .app,
+  .dashboard,
+  .main,
+  .content,
+  .container{
+    width:100%;
+    max-width:100%;
+    overflow-x:hidden;
+  }
+
+  .dashboard{
+    padding:18px 14px 110px;
+  }
+
+  .topbar,
+  .search-row,
+  .dashboard-top{
+    width:100%;
+    max-width:100%;
+    gap:12px;
+  }
+
+  .search-box,
+  .search{
+    flex:1;
+    min-width:0;
+    height:52px;
+    font-size:16px;
+  }
+
+  .user-avatar,
+  .profile-badge{
+    width:54px;
+    height:54px;
+    min-width:54px;
+    font-size:20px;
+  }
+
+  .dashboard-grid,
+  .main-grid{
+    display:flex;
+    flex-direction:column;
+    gap:18px;
+    width:100%;
+  }
+
+  .card,
+  .panel,
+  .next-match-card,
+  .table-card,
+  .recent-card,
+  .performance-card{
+    width:100%;
+    max-width:100%;
+    border-radius:22px;
+  }
+
+  .next-match-card,
+  .card{
+    padding:18px;
+  }
+
+  .match-box,
+  .next-match-box,
+  .match-preview{
+    width:100%;
+    max-width:100%;
+    padding:18px;
+    border-radius:20px;
+  }
+
+  .match-teams,
+  .teams-row,
+  .next-match-teams{
+    display:grid;
+    grid-template-columns:1fr auto 1fr;
+    align-items:start;
+    gap:10px;
+    width:100%;
+  }
+
+  .team-side,
+  .team-block{
+    min-width:0;
+  }
+
+  .team-name{
+    font-size:22px;
+    line-height:1.15;
+    word-break:normal;
+    overflow-wrap:break-word;
+  }
+
+  .team-name.away,
+  .team-block.right .team-name{
+    text-align:right;
+  }
+
+  .team-label{
+    font-size:12px;
+    letter-spacing:.18em;
+  }
+
+  .vs-pill,
+  .vs{
+    width:48px;
+    height:38px;
+    font-size:18px;
+    align-self:center;
+  }
+
+  .match-date,
+  .match-stadium{
+    font-size:15px;
+    line-height:1.35;
+  }
+
+  .standing-row,
+  .table-row{
+    min-width:0;
+    padding:14px;
+    gap:12px;
+  }
+
+  .standing-team,
+  .team-info{
+    min-width:0;
+  }
+
+  .standing-team-name,
+  .team-name-table{
+    font-size:18px;
+    white-space:normal;
+    overflow-wrap:break-word;
+  }
+
+  .section-title{
+    font-size:26px;
+    line-height:1.1;
+  }
+
+  .section-title-row{
+    align-items:flex-start;
+    gap:12px;
+  }
+}
+
+@media (max-width: 430px){
+  .dashboard{
+    padding:16px 12px 120px;
+  }
+
+  .next-match-card,
+  .card{
+    padding:16px;
+  }
+
+  .match-box,
+  .next-match-box,
+  .match-preview{
+    padding:16px;
+  }
+
+  .team-name{
+    font-size:20px;
+  }
+
+  .team-label{
+    font-size:11px;
+  }
+
+  .vs-pill,
+  .vs{
+    width:44px;
+    height:34px;
+    font-size:16px;
+  }
+
+  .match-date,
+  .match-stadium{
+    font-size:14px;
+  }
+
+  .chip,
+  .pill{
+    max-width:100%;
+    white-space:normal;
+    line-height:1.25;
+  }
+
+  .standing-team-name,
+  .team-name-table{
+    font-size:17px;
+  }
+}
+
+.mobile-bottom-nav{
+  display:none;
+}
+
+@media (max-width: 768px){
+  .sidebar{
+    display:none !important;
+  }
+
+  .app-shell,
+  .app-layout,
+  .dashboard-layout{
+    display:block;
+  }
+
+  .main-content,
+  .dashboard,
+  main{
+    margin-left:0 !important;
+    width:100% !important;
+    max-width:100% !important;
+    padding-bottom:120px !important;
+  }
+
+  .mobile-bottom-nav{
+    position:fixed;
+    left:0;
+    right:0;
+    bottom:0;
+    z-index:9999;
+    display:grid;
+    grid-template-columns:repeat(5, 1fr);
+    gap:0;
+    padding:10px 8px calc(10px + env(safe-area-inset-bottom));
+    background:rgba(3,7,11,.96);
+    border-top:1px solid rgba(255,255,255,.08);
+    backdrop-filter:blur(18px);
+  }
+
+  .mobile-nav-item{
+    min-width:0;
+    text-decoration:none;
+    color:#91a3ae;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    justify-content:center;
+    gap:4px;
+    font-size:18px;
+    padding:8px 4px;
+    border-radius:14px;
+  }
+
+  .mobile-nav-item strong{
+    font-size:10px;
+    font-weight:800;
+    line-height:1;
+  }
+
+  .mobile-nav-item:hover,
+  .mobile-nav-item:active{
+    color:#8ff1b8;
+    background:rgba(39,224,138,.10);
+  }
+}
 }

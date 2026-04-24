@@ -2,11 +2,11 @@
 <html lang="es">
 <head>
   <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <title>Atlético Nacional Stats</title>
 
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="{{ url_for('static', filename='main.css') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='main.css') }}?v=30">
 </head>
 
 <body>
@@ -201,5 +201,32 @@
   </div>
 
   <script src="{{ url_for('static', filename='main.js') }}"></script>
+
+  <nav class="mobile-bottom-nav">
+  <a href="/" class="mobile-nav-item">
+    <span>🏠</span>
+    <strong>Inicio</strong>
+  </a>
+
+  <a href="/calendario" class="mobile-nav-item">
+    <span>📅</span>
+    <strong>Calendario</strong>
+  </a>
+
+  <a href="/tabla" class="mobile-nav-item">
+    <span>📊</span>
+    <strong>Tabla</strong>
+  </a>
+
+  <a href="/estadisticas" class="mobile-nav-item">
+    <span>📈</span>
+    <strong>Stats</strong>
+  </a>
+
+  <a href="/plantel" class="mobile-nav-item">
+    <span>👕</span>
+    <strong>Plantel</strong>
+  </a>
+</nav>
 </body>
 </html>
