@@ -26,6 +26,7 @@ PAST_FIXTURE_DATES = [
     "2026-04-06",
     "2026-04-11",
     "2026-04-20",
+    "2026-04-25",
 ]
 
 
@@ -49,13 +50,41 @@ def find_nacional_match_on_date(match_date, team_id=TEAM_ID):
                 "vs",
                 event.get("awayTeam", {}).get("name"),
                 "| status.type =",
-                status_type
+                status_type,
             )
 
             if status_type == "finished":
                 return event
 
     return None
+
+
+def ensure_lineup_event_columns(cur):
+    """
+    Adds lineup columns if local DB was created before event/minute support.
+    """
+    cur.execute("PRAGMA table_info(lineups)")
+    existing_columns = {row[1] for row in cur.fetchall()}
+
+    columns_to_add = {
+        "yellow_cards": "INTEGER DEFAULT 0",
+        "red_cards": "INTEGER DEFAULT 0",
+        "is_substitute": "INTEGER DEFAULT 0",
+        "subbed_in": "INTEGER DEFAULT 0",
+        "subbed_out": "INTEGER DEFAULT 0",
+
+        "goal_minute": "TEXT",
+        "assist_minute": "TEXT",
+        "yellow_card_minute": "TEXT",
+        "red_card_minute": "TEXT",
+        "subbed_in_minute": "TEXT",
+        "subbed_out_minute": "TEXT",
+    }
+
+    for column_name, column_type in columns_to_add.items():
+        if column_name not in existing_columns:
+            print(f"Adding missing lineups column: {column_name}")
+            cur.execute(f"ALTER TABLE lineups ADD COLUMN {column_name} {column_type}")
 
 
 def save_match(cur, event_id, match_data, match_date_str, match_time_str):
@@ -109,6 +138,7 @@ def save_standings(cur, event_id, flat_table):
             row.get("points"),
         ))
 
+
 def get_player_id(player):
     return (
         player.get("player_id")
@@ -132,6 +162,7 @@ def get_player_stat(player, *keys):
 
     for key in keys:
         value = player.get(key)
+
         if value is not None:
             try:
                 return int(value)
@@ -139,6 +170,7 @@ def get_player_stat(player, *keys):
                 return 0
 
         value = stats.get(key)
+
         if value is not None:
             try:
                 return int(value)
@@ -147,31 +179,76 @@ def get_player_stat(player, *keys):
 
     return 0
 
-def save_lineups(cur, event_id, match_data):
-    cur.execute("DELETE FROM lineups WHERE event_id = ?", (event_id,))
+def get_player_text_stat(player, *keys):
+    stats = player.get("statistics") or player.get("stats") or {}
 
+    for key in keys:
+        value = player.get(key)
+
+        if value is not None and value != "":
+            return str(value)
+
+        value = stats.get(key)
+
+        if value is not None and value != "":
+            return str(value)
+
+    return None
+
+def get_all_lineup_groups(match_data):
+    """
+    Returns starters and substitutes for both teams in one consistent structure.
+
+    The important change:
+    - home_xi / away_xi are starters
+    - home_subs / away_subs are substitutes
+    """
     info = match_data["match_info"]
     lineups = match_data.get("lineups", {})
 
-    teams = [
+    return [
         {
             "side": "home",
             "team_id": info.get("home_team_id"),
             "team_name": info.get("home_team"),
             "players": lineups.get("home_xi", []),
+            "is_substitute": 0,
         },
         {
             "side": "away",
             "team_id": info.get("away_team_id"),
             "team_name": info.get("away_team"),
             "players": lineups.get("away_xi", []),
+            "is_substitute": 0,
+        },
+        {
+            "side": "home",
+            "team_id": info.get("home_team_id"),
+            "team_name": info.get("home_team"),
+            "players": lineups.get("home_subs", []),
+            "is_substitute": 1,
+        },
+        {
+            "side": "away",
+            "team_id": info.get("away_team_id"),
+            "team_name": info.get("away_team"),
+            "players": lineups.get("away_subs", []),
+            "is_substitute": 1,
         },
     ]
+
+
+def save_lineups(cur, event_id, match_data):
+    cur.execute("DELETE FROM lineups WHERE event_id = ?", (event_id,))
+
+    teams = get_all_lineup_groups(match_data)
 
     for team in teams:
         for player in team["players"]:
             goals = get_player_stat(player, "goals", "goal")
             assists = get_player_stat(player, "goalAssist", "assists", "goal_assist")
+            yellow_cards = get_player_stat(player, "yellow_cards", "yellowCards", "yellowCard")
+            red_cards = get_player_stat(player, "red_cards", "redCards", "redCard")
 
             cur.execute("""
                 INSERT INTO lineups (
@@ -185,8 +262,19 @@ def save_lineups(cur, event_id, match_data):
                     position,
                     rating,
                     goals,
-                    assists
-                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                    assists,
+                    yellow_cards,
+                    red_cards,
+                    is_substitute,
+                    subbed_in,
+                    subbed_out,
+                    goal_minute,
+                    assist_minute,
+                    yellow_card_minute,
+                    red_card_minute,
+                    subbed_in_minute,
+                    subbed_out_minute
+                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
             """, (
                 event_id,
                 team["side"],
@@ -199,26 +287,24 @@ def save_lineups(cur, event_id, match_data):
                 player.get("rating"),
                 goals,
                 assists,
+                yellow_cards,
+                red_cards,
+                team["is_substitute"],
+                1 if player.get("subbed_in") else 0,
+                1 if player.get("subbed_out") else 0,
+
+                get_player_text_stat(player, "goal_minute", "goal_minutes"),
+                get_player_text_stat(player, "assist_minute", "assist_minutes"),
+                get_player_text_stat(player, "yellow_card_minute", "yellow_card_minutes"),
+                get_player_text_stat(player, "red_card_minute", "red_card_minutes"),
+                get_player_text_stat(player, "subbed_in_minute", "sub_in_minute"),
+                get_player_text_stat(player, "subbed_out_minute", "sub_out_minute"),
             ))
 
 def save_player_match_stats(cur, event_id, match_data):
     cur.execute("DELETE FROM player_match_stats WHERE event_id = ?", (event_id,))
 
-    info = match_data["match_info"]
-    lineups = match_data.get("lineups", {})
-
-    teams = [
-        {
-            "team_id": info.get("home_team_id"),
-            "team_name": info.get("home_team"),
-            "players": lineups.get("home_xi", []),
-        },
-        {
-            "team_id": info.get("away_team_id"),
-            "team_name": info.get("away_team"),
-            "players": lineups.get("away_xi", []),
-        },
-    ]
+    teams = get_all_lineup_groups(match_data)
 
     for team in teams:
         # Detailed player stats only for Atlético Nacional
@@ -226,8 +312,35 @@ def save_player_match_stats(cur, event_id, match_data):
             continue
 
         for player in team["players"]:
-            stats = player.get("statistics") or player.get("stats") or {}
+            stats = dict(player.get("statistics") or player.get("stats") or {})
             player_id = get_player_id(player)
+
+            extra_stats = {
+                "goals": get_player_stat(player, "goals", "goal"),
+                "assists": get_player_stat(player, "goalAssist", "assists", "goal_assist"),
+                "yellow_cards": get_player_stat(player, "yellow_cards", "yellowCards", "yellowCard"),
+                "red_cards": get_player_stat(player, "red_cards", "redCards", "redCard"),
+                "is_substitute": team["is_substitute"],
+                "subbed_in": 1 if player.get("subbed_in") else 0,
+                "subbed_out": 1 if player.get("subbed_out") else 0,
+                "goal_minute": get_player_text_stat(player, "goal_minute", "goal_minutes"),
+                "assist_minute": get_player_text_stat(player, "assist_minute", "assist_minutes"),
+                "yellow_card_minute": get_player_text_stat(player, "yellow_card_minute", "yellow_card_minutes"),
+                "red_card_minute": get_player_text_stat(player, "red_card_minute", "red_card_minutes"),
+                "subbed_in_minute": get_player_text_stat(player, "subbed_in_minute", "sub_in_minute"),
+                "subbed_out_minute": get_player_text_stat(player, "subbed_out_minute", "sub_out_minute"),
+}
+
+            if player.get("minutes_played") is not None:
+                extra_stats["minutes_played"] = player.get("minutes_played")
+
+            if player.get("xg") is not None:
+                extra_stats["xg"] = player.get("xg")
+
+            if player.get("xa") is not None:
+                extra_stats["xa"] = player.get("xa")
+
+            stats.update(extra_stats)
 
             for stat_name, stat_value in stats.items():
                 if stat_value is None:
@@ -257,6 +370,7 @@ def save_player_match_stats(cur, event_id, match_data):
                     None,
                 ))
 
+
 def save_stats(cur, event_id, stats_by_period):
     cur.execute("DELETE FROM match_stats WHERE event_id = ?", (event_id,))
 
@@ -278,6 +392,8 @@ def save_stats(cur, event_id, stats_by_period):
 def ingest_matches():
     conn = get_connection()
     cur = conn.cursor()
+
+    ensure_lineup_event_columns(cur)
 
     inserted = 0
 
@@ -309,9 +425,17 @@ def ingest_matches():
         save_lineups(cur, event_id, match_data)
         save_player_match_stats(cur, event_id, match_data)
         save_stats(cur, event_id, match_data.get("stats_by_period", {}))
+
         inserted += 1
 
-        print(f"Saved: {match_data['match_info']['home_team']} vs {match_data['match_info']['away_team']}")
+        home_subs_count = len(match_data.get("lineups", {}).get("home_subs", []))
+        away_subs_count = len(match_data.get("lineups", {}).get("away_subs", []))
+
+        print(
+            f"Saved: {match_data['match_info']['home_team']} vs {match_data['match_info']['away_team']} "
+            f"| home_subs={home_subs_count} away_subs={away_subs_count}"
+        )
+
         time.sleep(2)
 
     conn.commit()

@@ -5,16 +5,25 @@
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>Tabla Liga BetPlay · Atlético Nacional</title>
 
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700;800;900&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="{{ url_for('static', filename='tabla.css') }}">
 </head>
 
 <body>
   <div class="app">
     <aside class="sidebar">
-      <div class="brand">
-        <div class="brand-badge">AN</div>
-        <div>ATLÉTICO<br><span style="color:var(--accent)">NACIONAL</span></div>
+      <div class="sidebar-brand">
+        <div class="sidebar-crest">
+          <img
+            src="https://images.fotmob.com/image_resources/logo/teamlogo/6368.png"
+            alt="Atlético Nacional"
+          >
+        </div>
+
+        <div class="sidebar-brand-text">
+          <div>VERDE</div>
+          <div>STATS</div>
+        </div>
       </div>
 
       <nav class="nav">

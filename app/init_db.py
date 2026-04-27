@@ -43,7 +43,7 @@ def init_db():
     )
     """)
 
-    cur.execute("""
+        cur.execute("""
     CREATE TABLE IF NOT EXISTS lineups (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         event_id INTEGER,
@@ -57,6 +57,19 @@ def init_db():
         rating REAL,
         goals INTEGER DEFAULT 0,
         assists INTEGER DEFAULT 0,
+        yellow_cards INTEGER DEFAULT 0,
+        red_cards INTEGER DEFAULT 0,
+        is_substitute INTEGER DEFAULT 0,
+        subbed_in INTEGER DEFAULT 0,
+        subbed_out INTEGER DEFAULT 0,
+
+        goal_minute TEXT,
+        assist_minute TEXT,
+        yellow_card_minute TEXT,
+        red_card_minute TEXT,
+        subbed_in_minute TEXT,
+        subbed_out_minute TEXT,
+
         FOREIGN KEY (event_id) REFERENCES matches(event_id)
     )
     """)

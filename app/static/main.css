@@ -1002,3 +1002,65 @@ body{
     font-size:17px;
   }
 }
+
+/* RECENT MATCH CARDS AS CLEAN LINKS */
+#recent-matches .match-link,
+#recent-matches .match-link:visited,
+#recent-matches .match-link:hover,
+#recent-matches .match-link:active{
+  color:inherit;
+  text-decoration:none;
+}
+
+#recent-matches .match-link{
+  cursor:pointer;
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:12px;
+  padding:12px 10px;
+  border-radius:13px;
+  background:rgba(255,255,255,0.015);
+  transition:
+    transform .18s ease,
+    border-color .18s ease,
+    background .18s ease,
+    box-shadow .18s ease;
+}
+
+#recent-matches .match-link .match-info,
+#recent-matches .match-link .match-info span,
+#recent-matches .match-link .match-opponent{
+  color:#e6eef6;
+  text-decoration:none;
+}
+
+#recent-matches .match-link .match-info .label{
+  color:var(--muted);
+  text-decoration:none;
+}
+
+#recent-matches .match-link:hover{
+  transform:translateY(-2px);
+  border-color:rgba(99,230,140,.28);
+  background:linear-gradient(90deg, rgba(43,120,72,.16), rgba(255,255,255,.035));
+  box-shadow:0 18px 42px rgba(0,0,0,.28);
+}
+
+#recent-matches .match-link:active{
+  transform:translateY(0);
+}
+
+#recent-matches .match-link .score-pill,
+#recent-matches .match-link .score-pill:visited{
+  text-decoration:none;
+}
+
+/* Extra safety against default browser anchor colors */
+#recent-matches a,
+#recent-matches a:visited,
+#recent-matches a:hover,
+#recent-matches a:active{
+  color:inherit;
+  text-decoration:none;
+}

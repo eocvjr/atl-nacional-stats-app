@@ -1,28 +1,173 @@
-const PLAYER_IMAGES = {
-  "David Ospina": "https://images.fotmob.com/image_resources/playerimages/50065.png",
-  "Harlen Castillo": "https://images.fotmob.com/image_resources/playerimages/1435218.png",
-  "Kevin Cataño": "https://images.fotmob.com/image_resources/playerimages/1886618.png",
-  "Andrés Román": "https://images.fotmob.com/image_resources/playerimages/925847.png",
-  "Milton Casco": "https://images.fotmob.com/image_resources/playerimages/174813.png",
-  "Simon Garcia": "https://images.fotmob.com/image_resources/playerimages/1579303.png",
-  "César Haydar": "https://images.fotmob.com/image_resources/playerimages/1139171.png",
-  "William Tesillo": "https://images.fotmob.com/image_resources/playerimages/207383.png",
-  "Neider Parra": "https://www.fotmob.com/img/player-fallback-dark.png",
-  "Samuel Velásquez": "https://images.fotmob.com/image_resources/playerimages/1433031.png",
-  "Cristian Uribe": "https://images.fotmob.com/image_resources/playerimages/1714944.png",
-  "Juan Manuel Rengifo": "https://images.fotmob.com/image_resources/playerimages/1798773.png",
-  "Matheus Uribe": "https://images.fotmob.com/image_resources/playerimages/320618.png",
-  "Andrés Sarmiento": "https://images.fotmob.com/image_resources/playerimages/942987.png",
-  "Jorman Campuzano": "https://images.fotmob.com/image_resources/playerimages/922875.png",
-  "Edwin Cardona": "https://images.fotmob.com/image_resources/playerimages/177507.png",
-  "Nicolás Rodríguez": "https://images.fotmob.com/image_resources/playerimages/1460577.png",
-  "Juan Zapata": "https://images.fotmob.com/image_resources/playerimages/1199834.png",
-  "Marlos Moreno": "https://images.fotmob.com/image_resources/playerimages/677249.png",
-  "Cristian Arango": "https://images.fotmob.com/image_resources/playerimages/452368.png",
-  "Eduard Bello": "https://images.fotmob.com/image_resources/playerimages/495825.png",
-  "Matias Lozano": "https://images.fotmob.com/image_resources/playerimages/1895028.png",
-  "Alfredo Morelos": "https://images.fotmob.com/image_resources/playerimages/579660.png",
-  "Dairon Asprilla": "https://images.fotmob.com/image_resources/playerimages/425783.png"
+const NACIONAL_ID = 6106;
+
+// --------- PLAYER IMAGES: ID FIRST, NEVER LOOSE NAME MATCH ---------
+const PLAYER_IMAGES_BY_ID = {
+  /*
+    Optional manual overrides using YOUR DB/API player_id.
+
+    Example:
+    123456: {
+      img: "https://images.fotmob.com/image_resources/playerimages/50065.png",
+      initials: "DO",
+      name: "David Ospina"
+    }
+
+    Leave this empty for now if you want. The code will use SofaScore's
+    player image endpoint by player_id automatically.
+  */
+};
+
+const PLAYER_IMAGES_BY_EXACT_NAME = {
+  // Exact-name fallback only. No generic surname keys.
+  // This page is Nacional-only, so exact-name fallback is safe if player_id is missing.
+
+  "David Ospina": {
+    img: "https://images.fotmob.com/image_resources/playerimages/50065.png",
+    initials: "DO"
+  },
+  "Harlen Castillo": {
+    img: "https://images.fotmob.com/image_resources/playerimages/1435218.png",
+    initials: "HC"
+  },
+  "Kevin Cataño": {
+    img: "https://images.fotmob.com/image_resources/playerimages/1886618.png",
+    initials: "KC"
+  },
+  "Kevin Catano": {
+    img: "https://images.fotmob.com/image_resources/playerimages/1886618.png",
+    initials: "KC"
+  },
+  "Kevin Castaño": {
+    img: "https://images.fotmob.com/image_resources/playerimages/1886618.png",
+    initials: "KC"
+  },
+  "Kevin Castano": {
+    img: "https://images.fotmob.com/image_resources/playerimages/1886618.png",
+    initials: "KC"
+  },
+  "Andrés Román": {
+    img: "https://images.fotmob.com/image_resources/playerimages/925847.png",
+    initials: "AR"
+  },
+  "Andres Roman": {
+    img: "https://images.fotmob.com/image_resources/playerimages/925847.png",
+    initials: "AR"
+  },
+  "Milton Casco": {
+    img: "https://images.fotmob.com/image_resources/playerimages/174813.png",
+    initials: "MC"
+  },
+
+  // Ambiguous names. Blank unless confirmed by ID.
+  "Simón García": {
+    img: "",
+    initials: "SG"
+  },
+  "Simon Garcia": {
+    img: "",
+    initials: "SG"
+  },
+  "Robinson García": {
+    img: "",
+    initials: "RG"
+  },
+  "Robinson Garcia": {
+    img: "",
+    initials: "RG"
+  },
+  "Cristian Uribe": {
+    img: "",
+    initials: "CU"
+  },
+  "Matheus Uribe": {
+    img: "https://images.fotmob.com/image_resources/playerimages/320618.png",
+    initials: "MU"
+  },
+
+  "César Haydar": {
+    img: "https://images.fotmob.com/image_resources/playerimages/1139171.png",
+    initials: "CH"
+  },
+  "Cesar Haydar": {
+    img: "https://images.fotmob.com/image_resources/playerimages/1139171.png",
+    initials: "CH"
+  },
+  "William Tesillo": {
+    img: "https://images.fotmob.com/image_resources/playerimages/207383.png",
+    initials: "WT"
+  },
+  "Wiliam Tesillo": {
+    img: "https://images.fotmob.com/image_resources/playerimages/207383.png",
+    initials: "WT"
+  },
+  "Samuel Velásquez": {
+    img: "https://images.fotmob.com/image_resources/playerimages/1433031.png",
+    initials: "SV"
+  },
+  "Samuel Velasquez": {
+    img: "https://images.fotmob.com/image_resources/playerimages/1433031.png",
+    initials: "SV"
+  },
+  "Juan Manuel Rengifo": {
+    img: "https://images.fotmob.com/image_resources/playerimages/1798773.png",
+    initials: "JM"
+  },
+  "Jorman Campuzano": {
+    img: "https://images.fotmob.com/image_resources/playerimages/922875.png",
+    initials: "JC"
+  },
+  "Edwin Cardona": {
+    img: "https://images.fotmob.com/image_resources/playerimages/177507.png",
+    initials: "EC"
+  },
+  "Andrés Sarmiento": {
+    img: "https://images.fotmob.com/image_resources/playerimages/942987.png",
+    initials: "AS"
+  },
+  "Andres Sarmiento": {
+    img: "https://images.fotmob.com/image_resources/playerimages/942987.png",
+    initials: "AS"
+  },
+  "Nicolás Rodríguez": {
+    img: "https://images.fotmob.com/image_resources/playerimages/1460577.png",
+    initials: "NR"
+  },
+  "Nicolas Rodriguez": {
+    img: "https://images.fotmob.com/image_resources/playerimages/1460577.png",
+    initials: "NR"
+  },
+  "Juan Zapata": {
+    img: "https://images.fotmob.com/image_resources/playerimages/1199834.png",
+    initials: "JZ"
+  },
+  "Marlos Moreno": {
+    img: "https://images.fotmob.com/image_resources/playerimages/677249.png",
+    initials: "MM"
+  },
+  "Cristian Arango": {
+    img: "https://images.fotmob.com/image_resources/playerimages/452368.png",
+    initials: "CA"
+  },
+  "Eduard Bello": {
+    img: "https://images.fotmob.com/image_resources/playerimages/495825.png",
+    initials: "EB"
+  },
+  "Matías Lozano": {
+    img: "https://images.fotmob.com/image_resources/playerimages/1895028.png",
+    initials: "ML"
+  },
+  "Matias Lozano": {
+    img: "https://images.fotmob.com/image_resources/playerimages/1895028.png",
+    initials: "ML"
+  },
+  "Alfredo Morelos": {
+    img: "https://images.fotmob.com/image_resources/playerimages/579660.png",
+    initials: "AM"
+  },
+  "Dairon Asprilla": {
+    img: "https://images.fotmob.com/image_resources/playerimages/425783.png",
+    initials: "DA"
+  }
 };
 
 const LEADER_CATEGORIES = [
@@ -66,6 +211,103 @@ function setText(id, value){
   if(el) el.textContent = value;
 }
 
+function normalizeText(value){
+  return String(value || "")
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .toLowerCase()
+    .trim();
+}
+
+function initials(name){
+  const parts = String(name || "").trim().split(/\s+/).filter(Boolean);
+
+  if(!parts.length) return "AN";
+  if(parts.length === 1) return parts[0].slice(0, 2).toUpperCase();
+
+  return `${parts[0][0]}${parts[1][0]}`.toUpperCase();
+}
+
+function getPlayerId(player){
+  return player?.player_id || player?.id || null;
+}
+
+function findExactNameImage(playerName){
+  const normalizedName = normalizeText(playerName);
+
+  for(const [name, data] of Object.entries(PLAYER_IMAGES_BY_EXACT_NAME)){
+    if(normalizeText(name) === normalizedName){
+      return data;
+    }
+  }
+
+  return null;
+}
+
+function playerImageData(player, options = {}){
+  const allowNameFallback = options.allowNameFallback ?? true;
+  const playerId = getPlayerId(player);
+  const playerName = player?.player_name || player?.name || "";
+
+  // 1. Best: manual override by DB/API player_id.
+  if(playerId && PLAYER_IMAGES_BY_ID[playerId]){
+    return PLAYER_IMAGES_BY_ID[playerId];
+  }
+
+  // 2. Safe: SofaScore image by exact player_id.
+  if(playerId){
+    return {
+      img: `https://api.sofascore.app/api/v1/player/${playerId}/image`,
+      initials: initials(playerName),
+      name: playerName
+    };
+  }
+
+  // 3. Exact full-name fallback only. No includes().
+  if(allowNameFallback){
+    const exact = findExactNameImage(playerName);
+
+    if(exact){
+      return exact;
+    }
+  }
+
+  return {
+    img: "",
+    initials: initials(playerName),
+    name: playerName
+  };
+}
+
+function getPlayerImage(player){
+  const imageData = playerImageData(player, { allowNameFallback: true });
+  return player?.image_url || imageData?.img || "";
+}
+
+function getPlayerInitials(player){
+  const imageData = playerImageData(player, { allowNameFallback: true });
+  return imageData?.initials || initials(player?.player_name || player?.name || "");
+}
+
+function playerImgTag(player, className = ""){
+  const name = player?.player_name || player?.name || "Jugador";
+  const imageUrl = getPlayerImage(player);
+  const fallbackInitials = getPlayerInitials(player);
+
+  if(imageUrl){
+    return `
+      <img
+        class="${className}"
+        src="${imageUrl}"
+        alt="${name}"
+        onerror="this.remove(); this.parentNode.textContent='${fallbackInitials}'"
+      >
+    `;
+  }
+
+  return fallbackInitials;
+}
+
 function formatStat(value, decimals = 2){
   if(value === null || value === undefined || value === ""){
     return "-";
@@ -84,10 +326,6 @@ function formatStat(value, decimals = 2){
   return num.toFixed(decimals).replace(/\.00$/, "");
 }
 
-function getPlayerImage(name){
-  return PLAYER_IMAGES[name] || "https://www.fotmob.com/img/player-fallback-dark.png";
-}
-
 function getTeamBadge(teamId){
   if(!teamId) return "";
   return `https://api.sofascore.app/api/v1/team/${teamId}/image`;
@@ -95,7 +333,13 @@ function getTeamBadge(teamId){
 
 function normalizePlayer(player){
   return {
+    player_id: player.player_id || player.id || null,
+    id: player.player_id || player.id || null,
+    team_id: player.team_id || NACIONAL_ID,
+    team_name: player.team_name || "Atlético Nacional",
+
     player_name: player.player_name || player.name || "Jugador",
+    name: player.player_name || player.name || "Jugador",
     position: player.position || "-",
     appearances: Number(player.appearances || 0),
     avg_rating: Number(player.avg_rating || 0),
@@ -131,7 +375,9 @@ function normalizePlayer(player){
     dispossessed_per_match: Number(player.dispossessed_per_match || 0),
 
     yellow_cards: Number(player.yellow_cards || 0),
-    red_cards: Number(player.red_cards || 0)
+    red_cards: Number(player.red_cards || 0),
+
+    image_url: player.image_url || ""
   };
 }
 
@@ -265,7 +511,7 @@ function buildLeaderCard(category, topThree){
       <div class="leader-top">
         <div class="leader-top-left">
           <div class="leader-avatar">
-            <img src="${getPlayerImage(leader.player_name)}" alt="${leader.player_name}">
+            ${playerImgTag(leader)}
           </div>
 
           <div class="leader-main-info">
@@ -347,7 +593,7 @@ function renderPlayerPreview(player){
       <div class="leader-top" style="margin-bottom:0;">
         <div class="leader-top-left">
           <div class="leader-avatar">
-            <img src="${getPlayerImage(player.player_name)}" alt="${player.player_name}">
+            ${playerImgTag(player)}
           </div>
 
           <div class="leader-main-info">

@@ -1,117 +1,170 @@
-const PLAYER_IMAGES = {
-  Ospina: {
+const NACIONAL_ID = 6106;
+
+// --------- PLAYER IMAGES: ID FIRST, NEVER LOOSE NAME MATCH ---------
+const PLAYER_IMAGES_BY_ID = {
+  /*
+    Optional manual overrides using YOUR DB/API player_id.
+
+    Example:
+    123456: {
+      img: "https://images.fotmob.com/image_resources/playerimages/50065.png",
+      initials: "DO",
+      name: "David Ospina"
+    }
+
+    Leave this empty for now if you want. The code will use SofaScore's
+    player image endpoint by player_id automatically.
+  */
+};
+
+const PLAYER_IMAGES_BY_EXACT_NAME = {
+  // Exact-name fallback only. No generic surname keys.
+  // This page is Nacional-only, so exact-name fallback is safe if player_id is missing.
+
+  "David Ospina": {
     img: "https://images.fotmob.com/image_resources/playerimages/50065.png",
     initials: "DO"
   },
-  Castillo: {
+  "Harlen Castillo": {
     img: "https://images.fotmob.com/image_resources/playerimages/1435218.png",
     initials: "HC"
   },
-  Cataño: {
+  "Kevin Cataño": {
     img: "https://images.fotmob.com/image_resources/playerimages/1886618.png",
     initials: "KC"
   },
-  Castaño: {
+  "Kevin Catano": {
     img: "https://images.fotmob.com/image_resources/playerimages/1886618.png",
     initials: "KC"
   },
-  Roman: {
+  "Kevin Castaño": {
+    img: "https://images.fotmob.com/image_resources/playerimages/1886618.png",
+    initials: "KC"
+  },
+  "Kevin Castano": {
+    img: "https://images.fotmob.com/image_resources/playerimages/1886618.png",
+    initials: "KC"
+  },
+  "Andrés Román": {
     img: "https://images.fotmob.com/image_resources/playerimages/925847.png",
     initials: "AR"
   },
-  Román: {
+  "Andres Roman": {
     img: "https://images.fotmob.com/image_resources/playerimages/925847.png",
     initials: "AR"
   },
-  Casco: {
+  "Milton Casco": {
     img: "https://images.fotmob.com/image_resources/playerimages/174813.png",
     initials: "MC"
   },
-  Garcia: {
-    img: "https://images.fotmob.com/image_resources/playerimages/1579303.png",
+
+  // Ambiguous names. Blank unless confirmed by ID.
+  "Simón García": {
+    img: "",
     initials: "SG"
   },
-  García: {
-    img: "https://images.fotmob.com/image_resources/playerimages/1579303.png",
+  "Simon Garcia": {
+    img: "",
     initials: "SG"
   },
-  Haydar: {
-    img: "https://images.fotmob.com/image_resources/playerimages/1139171.png",
-    initials: "CH"
+  "Robinson García": {
+    img: "",
+    initials: "RG"
   },
-  Tesillo: {
-    img: "https://images.fotmob.com/image_resources/playerimages/207383.png",
-    initials: "WT"
+  "Robinson Garcia": {
+    img: "",
+    initials: "RG"
   },
-  Parra: {
-    img: "https://www.fotmob.com/img/player-fallback-dark.png",
-    initials: "KP"
-  },
-  Velasquez: {
-    img: "https://images.fotmob.com/image_resources/playerimages/1433031.png",
-    initials: "SV"
-  },
-  Velásquez: {
-    img: "https://images.fotmob.com/image_resources/playerimages/1433031.png",
-    initials: "SV"
-  },
-  CUribe: {
-    img: "https://images.fotmob.com/image_resources/playerimages/1714944.png",
+  "Cristian Uribe": {
+    img: "",
     initials: "CU"
   },
-  Rengifo: {
-    img: "https://images.fotmob.com/image_resources/playerimages/1798773.png",
-    initials: "JM"
-  },
-  Uribe: {
+  "Matheus Uribe": {
     img: "https://images.fotmob.com/image_resources/playerimages/320618.png",
     initials: "MU"
   },
-  Sarmiento: {
-    img: "https://images.fotmob.com/image_resources/playerimages/942987.png",
-    initials: "AS"
+
+  "César Haydar": {
+    img: "https://images.fotmob.com/image_resources/playerimages/1139171.png",
+    initials: "CH"
   },
-  Campuzano: {
+  "Cesar Haydar": {
+    img: "https://images.fotmob.com/image_resources/playerimages/1139171.png",
+    initials: "CH"
+  },
+  "William Tesillo": {
+    img: "https://images.fotmob.com/image_resources/playerimages/207383.png",
+    initials: "WT"
+  },
+  "Wiliam Tesillo": {
+    img: "https://images.fotmob.com/image_resources/playerimages/207383.png",
+    initials: "WT"
+  },
+  "Samuel Velásquez": {
+    img: "https://images.fotmob.com/image_resources/playerimages/1433031.png",
+    initials: "SV"
+  },
+  "Samuel Velasquez": {
+    img: "https://images.fotmob.com/image_resources/playerimages/1433031.png",
+    initials: "SV"
+  },
+  "Juan Manuel Rengifo": {
+    img: "https://images.fotmob.com/image_resources/playerimages/1798773.png",
+    initials: "JM"
+  },
+  "Jorman Campuzano": {
     img: "https://images.fotmob.com/image_resources/playerimages/922875.png",
     initials: "JC"
   },
-  Cardona: {
+  "Edwin Cardona": {
     img: "https://images.fotmob.com/image_resources/playerimages/177507.png",
     initials: "EC"
   },
-  Rodriguez: {
+  "Andrés Sarmiento": {
+    img: "https://images.fotmob.com/image_resources/playerimages/942987.png",
+    initials: "AS"
+  },
+  "Andres Sarmiento": {
+    img: "https://images.fotmob.com/image_resources/playerimages/942987.png",
+    initials: "AS"
+  },
+  "Nicolás Rodríguez": {
     img: "https://images.fotmob.com/image_resources/playerimages/1460577.png",
     initials: "NR"
   },
-  Rodríguez: {
+  "Nicolas Rodriguez": {
     img: "https://images.fotmob.com/image_resources/playerimages/1460577.png",
     initials: "NR"
   },
-  Zapata: {
+  "Juan Zapata": {
     img: "https://images.fotmob.com/image_resources/playerimages/1199834.png",
     initials: "JZ"
   },
-  Moreno: {
+  "Marlos Moreno": {
     img: "https://images.fotmob.com/image_resources/playerimages/677249.png",
     initials: "MM"
   },
-  Arango: {
+  "Cristian Arango": {
     img: "https://images.fotmob.com/image_resources/playerimages/452368.png",
     initials: "CA"
   },
-  Bello: {
+  "Eduard Bello": {
     img: "https://images.fotmob.com/image_resources/playerimages/495825.png",
     initials: "EB"
   },
-  Lozano: {
+  "Matías Lozano": {
     img: "https://images.fotmob.com/image_resources/playerimages/1895028.png",
     initials: "ML"
   },
-  Morelos: {
+  "Matias Lozano": {
+    img: "https://images.fotmob.com/image_resources/playerimages/1895028.png",
+    initials: "ML"
+  },
+  "Alfredo Morelos": {
     img: "https://images.fotmob.com/image_resources/playerimages/579660.png",
     initials: "AM"
   },
-  Asprilla: {
+  "Dairon Asprilla": {
     img: "https://images.fotmob.com/image_resources/playerimages/425783.png",
     initials: "DA"
   }
@@ -121,7 +174,11 @@ let ALL_PLAYERS = [];
 
 async function fetchJSON(url){
   const res = await fetch(url);
-  if(!res.ok) throw new Error("HTTP " + res.status);
+
+  if(!res.ok){
+    throw new Error("HTTP " + res.status);
+  }
+
   return res.json();
 }
 
@@ -129,23 +186,28 @@ function normalizeText(value){
   return String(value || "")
     .normalize("NFD")
     .replace(/[\u0300-\u036f]/g, "")
-    .toLowerCase();
+    .toLowerCase()
+    .trim();
 }
 
 function initials(name){
-  if(!name) return "--";
-  const parts = name.trim().split(/\s+/).filter(Boolean);
-  if(parts.length === 1) return parts[0].slice(0,2).toUpperCase();
-  return (parts[0][0] + parts[1][0]).toUpperCase();
+  const parts = String(name || "").trim().split(/\s+/).filter(Boolean);
+
+  if(!parts.length) return "--";
+  if(parts.length === 1) return parts[0].slice(0, 2).toUpperCase();
+
+  return `${parts[0][0]}${parts[1][0]}`.toUpperCase();
 }
 
-function findPlayerImage(playerName){
+function getPlayerId(player){
+  return player?.player_id || player?.id || null;
+}
+
+function findExactNameImage(playerName){
   const normalizedName = normalizeText(playerName);
 
-  for(const [key, data] of Object.entries(PLAYER_IMAGES)){
-    const normalizedKey = normalizeText(key);
-
-    if(normalizedName.includes(normalizedKey)){
+  for(const [name, data] of Object.entries(PLAYER_IMAGES_BY_EXACT_NAME)){
+    if(normalizeText(name) === normalizedName){
       return data;
     }
   }
@@ -153,8 +215,53 @@ function findPlayerImage(playerName){
   return null;
 }
 
+function playerImageData(player, options = {}){
+  const allowNameFallback = options.allowNameFallback ?? true;
+  const playerId = getPlayerId(player);
+  const playerName = player?.player_name || player?.name || "";
+
+  // 1. Best: manual override by DB/API player_id.
+  if(playerId && PLAYER_IMAGES_BY_ID[playerId]){
+    return PLAYER_IMAGES_BY_ID[playerId];
+  }
+
+  // 2. Safe: SofaScore image by exact player_id.
+  if(playerId){
+    return {
+      img: `https://api.sofascore.app/api/v1/player/${playerId}/image`,
+      initials: initials(playerName),
+      name: playerName
+    };
+  }
+
+  // 3. Exact full-name fallback only. No includes().
+  if(allowNameFallback){
+    const exact = findExactNameImage(playerName);
+
+    if(exact){
+      return exact;
+    }
+  }
+
+  return {
+    img: "",
+    initials: initials(playerName),
+    name: playerName
+  };
+}
+
+function getPlayerImage(player){
+  const imageData = playerImageData(player, { allowNameFallback: true });
+  return player?.image_url || imageData?.img || "";
+}
+
+function getPlayerInitials(player){
+  const imageData = playerImageData(player, { allowNameFallback: true });
+  return imageData?.initials || initials(player?.player_name || player?.name || "");
+}
+
 function normalizeGroup(position){
-  const pos = (position || "").toUpperCase().trim();
+  const pos = String(position || "").toUpperCase().trim();
 
   if(["POR", "GK", "G"].includes(pos)) return "POR";
   if(["DEF", "DF", "D", "CB", "LB", "RB", "LWB", "RWB"].includes(pos)) return "DEF";
@@ -168,18 +275,46 @@ function positionLabel(position){
   return normalizeGroup(position);
 }
 
+function normalizePlayer(player){
+  return {
+    player_id: player.player_id || player.id || null,
+    id: player.player_id || player.id || null,
+    team_id: player.team_id || NACIONAL_ID,
+    team_name: player.team_name || "Atlético Nacional",
+
+    player_name: player.player_name || player.name || "Jugador",
+    name: player.player_name || player.name || "Jugador",
+    position: player.position || "-",
+    appearances: Number(player.appearances || 0),
+    avg_rating: player.avg_rating === null || player.avg_rating === undefined || player.avg_rating === ""
+      ? null
+      : Number(player.avg_rating),
+
+    goals: Number(player.goals || 0),
+    assists: Number(player.assists || 0),
+    yellow_cards: Number(player.yellow_cards || 0),
+    red_cards: Number(player.red_cards || 0),
+
+    image_url: player.image_url || ""
+  };
+}
+
 function updateSummary(players){
   const totalEl = document.getElementById("total-players");
   const avgEl = document.getElementById("avg-rating");
 
-  totalEl.textContent = players.length;
+  if(totalEl){
+    totalEl.textContent = players.length;
+  }
+
+  if(!avgEl) return;
 
   const ratings = players
-    .map(p => p.avg_rating)
-    .filter(v => v !== null && v !== undefined && v !== "");
+    .map(player => player.avg_rating)
+    .filter(value => value !== null && value !== undefined && value !== "" && !Number.isNaN(Number(value)));
 
   if(ratings.length){
-    const avg = ratings.reduce((a, b) => a + Number(b), 0) / ratings.length;
+    const avg = ratings.reduce((sum, value) => sum + Number(value), 0) / ratings.length;
     avgEl.textContent = avg.toFixed(2);
   } else {
     avgEl.textContent = "-";
@@ -187,16 +322,16 @@ function updateSummary(players){
 }
 
 function avatarHTML(player){
-  const match = findPlayerImage(player.player_name);
-  const imageUrl = player.image_url || match?.img;
-  const fallbackInitials = match?.initials || initials(player.player_name);
+  const imageUrl = getPlayerImage(player);
+  const fallbackInitials = getPlayerInitials(player);
+  const name = player.player_name || "Jugador";
 
   if(imageUrl){
     return `
       <div class="player-avatar">
         <img
           src="${imageUrl}"
-          alt="${player.player_name}"
+          alt="${name}"
           onerror="this.remove(); this.parentNode.textContent='${fallbackInitials}'"
         >
       </div>
@@ -226,8 +361,13 @@ function playerCardHTML(player){
           <div class="stat-value">${player.appearances ?? "-"}</div>
           <div class="stat-label">Apariciones</div>
         </div>
+
         <div class="stat">
-          <div class="stat-value">${player.avg_rating ?? "-"}</div>
+          <div class="stat-value">${
+            player.avg_rating === null || player.avg_rating === undefined || Number.isNaN(Number(player.avg_rating))
+              ? "-"
+              : Number(player.avg_rating).toFixed(2)
+          }</div>
           <div class="stat-label">Rating promedio</div>
         </div>
       </div>
@@ -239,15 +379,17 @@ function renderPlayers(players){
   const container = document.getElementById("players-groups");
   const empty = document.getElementById("empty-state");
 
+  if(!container) return;
+
   container.innerHTML = "";
 
   if(!players || !players.length){
-    empty.style.display = "block";
+    if(empty) empty.style.display = "block";
     updateSummary([]);
     return;
   }
 
-  empty.style.display = "none";
+  if(empty) empty.style.display = "none";
   updateSummary(players);
 
   const grouped = {
@@ -262,28 +404,28 @@ function renderPlayers(players){
     grouped[normalizeGroup(player.position)].push(player);
   });
 
-  const order = ["POR", "DEF", "MED", "DEL"];
+  const titleMap = {
+    POR: "Porteros",
+    DEF: "Defensas",
+    MED: "Mediocampistas",
+    DEL: "Delanteros",
+    OTROS: "Otros"
+  };
 
-  order.forEach(groupName => {
-    if(!grouped[groupName].length) return;
+  ["POR", "DEF", "MED", "DEL", "OTROS"].forEach(groupName => {
+    const groupPlayers = grouped[groupName];
+
+    if(!groupPlayers.length) return;
 
     const block = document.createElement("section");
     block.className = "group-block";
-
-    const groupPlayers = grouped[groupName];
-
-    const titleMap = {
-      POR: "Porteros",
-      DEF: "Defensas",
-      MED: "Mediocampistas",
-      DEL: "Delanteros"
-    };
 
     block.innerHTML = `
       <div class="group-header">
         <h2 class="group-title">${titleMap[groupName]}</h2>
         <div class="group-count">${groupPlayers.length}</div>
       </div>
+
       <div class="group-grid">
         ${groupPlayers.map(playerCardHTML).join("")}
       </div>
@@ -291,46 +433,51 @@ function renderPlayers(players){
 
     container.appendChild(block);
   });
-
-  if(grouped.OTROS.length){
-    const block = document.createElement("section");
-    block.className = "group-block";
-
-    block.innerHTML = `
-      <div class="group-header">
-        <h2 class="group-title">Otros</h2>
-        <div class="group-count">${grouped.OTROS.length}</div>
-      </div>
-      <div class="group-grid">
-        ${grouped.OTROS.map(playerCardHTML).join("")}
-      </div>
-    `;
-
-    container.appendChild(block);
-  }
 }
 
 function applyFilters(){
-  const search = document.getElementById("player-search").value.trim().toLowerCase();
+  const searchInput = document.getElementById("player-search");
+  const search = normalizeText(searchInput?.value || "");
 
   const filtered = ALL_PLAYERS.filter(player => {
-    return !search || (player.player_name || "").toLowerCase().includes(search);
+    const name = normalizeText(player.player_name || "");
+    const position = normalizeText(player.position || "");
+    const group = normalizeText(positionLabel(player.position));
+
+    return !search
+      || name.includes(search)
+      || position.includes(search)
+      || group.includes(search);
   });
 
   renderPlayers(filtered);
 }
 
 async function initPlantel(){
-  try {
+  try{
     const data = await fetchJSON("/api/plantel");
-    ALL_PLAYERS = data.players || [];
+
+    const rawPlayers = Array.isArray(data.players) ? data.players : [];
+    ALL_PLAYERS = rawPlayers.map(normalizePlayer);
+
     renderPlayers(ALL_PLAYERS);
 
-    document.getElementById("player-search").addEventListener("input", applyFilters);
-  } catch(err) {
+    const searchInput = document.getElementById("player-search");
+
+    if(searchInput){
+      searchInput.addEventListener("input", applyFilters);
+    }
+  } catch(err){
     console.error(err);
-    document.getElementById("empty-state").style.display = "block";
-    document.getElementById("empty-state").textContent = "No se pudo cargar el plantel.";
+
+    const empty = document.getElementById("empty-state");
+
+    if(empty){
+      empty.style.display = "block";
+      empty.textContent = "No se pudo cargar el plantel.";
+    }
+
+    updateSummary([]);
   }
 }
 

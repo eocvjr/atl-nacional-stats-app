@@ -12,6 +12,37 @@ CORS(app)
 TEAM_ID = 6106
 
 
+def row_has_key(row, key):
+    try:
+        return key in row.keys()
+    except Exception:
+        return False
+
+
+def row_value(row, key, default=None):
+    if row_has_key(row, key):
+        value = row[key]
+        return default if value is None else value
+
+    return default
+
+
+def bool_from_db(value):
+    try:
+        return bool(int(value or 0))
+    except Exception:
+        return bool(value)
+
+
+def int_from_db(value, default=0):
+    try:
+        if value is None or value == "":
+            return default
+        return int(value)
+    except Exception:
+        return default
+
+
 def compute_result_class(home_team, away_team, home_score, away_score):
     result_class = "score-draw"
 
@@ -28,27 +59,75 @@ def compute_result_class(home_team, away_team, home_score, away_score):
     return result_class
 
 
+def row_to_player(row):
+    is_substitute = int_from_db(row_value(row, "is_substitute", 0))
+    subbed_in = bool_from_db(row_value(row, "subbed_in", 0))
+    subbed_out = bool_from_db(row_value(row, "subbed_out", 0))
+
+    return {
+        "id": row_value(row, "player_id"),
+        "player_id": row_value(row, "player_id"),
+
+        "team_side": row_value(row, "team_side"),
+        "team_id": row_value(row, "team_id"),
+        "team_name": row_value(row, "team_name"),
+
+        "name": row_value(row, "player_name"),
+        "player_name": row_value(row, "player_name"),
+
+        "shirt_number": row_value(row, "shirt_number"),
+        "position": row_value(row, "position"),
+        "rating": row_value(row, "rating"),
+
+        "goals": int_from_db(row_value(row, "goals", 0)),
+        "assists": int_from_db(row_value(row, "assists", 0)),
+        "yellow_cards": int_from_db(row_value(row, "yellow_cards", 0)),
+        "red_cards": int_from_db(row_value(row, "red_cards", 0)),
+
+        "is_substitute": is_substitute,
+        "subbed_in": subbed_in,
+        "subbed_out": subbed_out,
+
+        "goal_minute": row_value(row, "goal_minute"),
+        "goal_minutes": row_value(row, "goal_minute"),
+        
+        "assist_minute": row_value(row, "assist_minute"),
+        "assist_minutes": row_value(row, "assist_minute"),
+        
+        "yellow_card_minute": row_value(row, "yellow_card_minute"),
+        "yellow_card_minutes": row_value(row, "yellow_card_minute"),
+        "red_card_minute": row_value(row, "red_card_minute"),
+        "red_card_minutes": row_value(row, "red_card_minute"),
+        
+        "subbed_in_minute": row_value(row, "subbed_in_minute"),
+        "subbed_out_minute": row_value(row, "subbed_out_minute"),
+
+        "has_detail": row_value(row, "team_id") == TEAM_ID and row_value(row, "player_id") is not None,
+    }
+
+
 def build_lineups_from_rows(lineup_rows):
-    lineups = {"home_xi": [], "away_xi": []}
+    lineups = {
+        "confirmed": True,
+        "home_xi": [],
+        "away_xi": [],
+        "home_subs": [],
+        "away_subs": [],
+    }
 
     for row in lineup_rows:
-        player = {
-            "player_id": row["player_id"],
-            "team_id": row["team_id"],
-            "team_name": row["team_name"],
-            "name": row["player_name"],
-            "shirt_number": row["shirt_number"],
-            "position": row["position"],
-            "rating": row["rating"],
-            "goals": row["goals"],
-            "assists": row["assists"],
-            "has_detail": row["team_id"] == TEAM_ID and row["player_id"] is not None,
-        }
+        player = row_to_player(row)
+        team_side = row_value(row, "team_side")
+        is_substitute = bool_from_db(row_value(row, "is_substitute", 0))
 
-        if row["team_side"] == "home":
+        if team_side == "home" and not is_substitute:
             lineups["home_xi"].append(player)
-        else:
+        elif team_side == "away" and not is_substitute:
             lineups["away_xi"].append(player)
+        elif team_side == "home" and is_substitute:
+            lineups["home_subs"].append(player)
+        elif team_side == "away" and is_substitute:
+            lineups["away_subs"].append(player)
 
     return lineups
 
@@ -80,6 +159,110 @@ def get_previous_matches_from_db():
     return out
 
 
+def get_stats_by_period_from_rows(stat_rows):
+    stats_by_period = {"TOTAL": [], "1T": [], "2T": []}
+
+    for row in stat_rows:
+        period = row_value(row, "period", "TOTAL")
+
+        if period not in stats_by_period:
+            stats_by_period[period] = []
+
+        stats_by_period[period].append({
+            "name": row_value(row, "stat_name"),
+            "home": row_value(row, "home_value"),
+            "away": row_value(row, "away_value"),
+        })
+
+    return stats_by_period
+
+
+def get_lineup_rows_for_event(cur, event_id):
+    cur.execute("""
+        SELECT
+            team_side,
+            team_id,
+            team_name,
+            player_id,
+            player_name,
+            shirt_number,
+            position,
+            rating,
+            goals,
+            assists,
+            yellow_cards,
+            red_cards,
+            is_substitute,
+            subbed_in,
+            subbed_out,
+            goal_minute,
+            assist_minute,
+            yellow_card_minute,
+            red_card_minute,
+            subbed_in_minute,
+            subbed_out_minute
+        FROM lineups
+        WHERE event_id = ?
+        ORDER BY
+            team_side ASC,
+            is_substitute ASC,
+            CASE position
+                WHEN 'POR' THEN 1
+                WHEN 'DEF' THEN 2
+                WHEN 'MED' THEN 3
+                WHEN 'DEL' THEN 4
+                ELSE 5
+            END,
+            shirt_number ASC,
+            player_name ASC
+    """, (event_id,))
+
+    return cur.fetchall()
+
+
+def get_match_detail_from_db(event_id):
+    conn = get_connection()
+    cur = conn.cursor()
+
+    cur.execute("SELECT * FROM matches WHERE event_id = ?", (event_id,))
+    match = cur.fetchone()
+
+    if not match:
+        conn.close()
+        return None
+
+    cur.execute("""
+        SELECT position, team_name, played, wins, draws, losses,
+               goals_for, goals_against, goal_diff, points
+        FROM standings
+        WHERE event_id = ?
+        ORDER BY position ASC
+    """, (event_id,))
+    flat_table = [dict(r) for r in cur.fetchall()]
+
+    lineup_rows = get_lineup_rows_for_event(cur, event_id)
+
+    cur.execute("""
+        SELECT period, stat_name, home_value, away_value
+        FROM match_stats
+        WHERE event_id = ?
+        ORDER BY id ASC
+    """, (event_id,))
+    stat_rows = cur.fetchall()
+
+    conn.close()
+
+    return {
+        "event_id": match["event_id"],
+        "date": match["date"],
+        "time": match["time"],
+        "match_info": dict(match),
+        "flat_table": flat_table,
+        "lineups": build_lineups_from_rows(lineup_rows),
+        "stats_by_period": get_stats_by_period_from_rows(stat_rows),
+    }
+
+
 def get_latest_match_detail_from_db():
     conn = get_connection()
     cur = conn.cursor()
@@ -107,40 +290,17 @@ def get_latest_match_detail_from_db():
     """, (event_id,))
     flat_table = [dict(r) for r in cur.fetchall()]
 
-    cur.execute("""
-        SELECT
-            team_side,
-            team_id,
-            team_name,
-            player_id,
-            player_name,
-            shirt_number,
-            position,
-            rating,
-            goals,
-            assists
-        FROM lineups
-        WHERE event_id = ?
-    """, (event_id,))
-    lineup_rows = [dict(r) for r in cur.fetchall()]
+    lineup_rows = get_lineup_rows_for_event(cur, event_id)
 
     cur.execute("""
         SELECT period, stat_name, home_value, away_value
         FROM match_stats
         WHERE event_id = ?
+        ORDER BY id ASC
     """, (event_id,))
-    stat_rows = [dict(r) for r in cur.fetchall()]
+    stat_rows = cur.fetchall()
 
     conn.close()
-
-    stats_by_period = {"TOTAL": [], "1T": [], "2T": []}
-
-    for row in stat_rows:
-        stats_by_period.setdefault(row["period"], []).append({
-            "name": row["stat_name"],
-            "home": row["home_value"],
-            "away": row["away_value"],
-        })
 
     return {
         "event_id": match["event_id"],
@@ -149,73 +309,7 @@ def get_latest_match_detail_from_db():
         "match_info": dict(match),
         "flat_table": flat_table,
         "lineups": build_lineups_from_rows(lineup_rows),
-        "stats_by_period": stats_by_period,
-    }
-
-
-def get_match_detail_from_db(event_id):
-    conn = get_connection()
-    cur = conn.cursor()
-
-    cur.execute("SELECT * FROM matches WHERE event_id = ?", (event_id,))
-    match = cur.fetchone()
-
-    if not match:
-        conn.close()
-        return None
-
-    cur.execute("""
-        SELECT position, team_name, played, wins, draws, losses,
-               goals_for, goals_against, goal_diff, points
-        FROM standings
-        WHERE event_id = ?
-        ORDER BY position ASC
-    """, (event_id,))
-    flat_table = [dict(r) for r in cur.fetchall()]
-
-    cur.execute("""
-        SELECT
-            team_side,
-            team_id,
-            team_name,
-            player_id,
-            player_name,
-            shirt_number,
-            position,
-            rating,
-            goals,
-            assists
-        FROM lineups
-        WHERE event_id = ?
-    """, (event_id,))
-    lineup_rows = [dict(r) for r in cur.fetchall()]
-
-    cur.execute("""
-        SELECT period, stat_name, home_value, away_value
-        FROM match_stats
-        WHERE event_id = ?
-    """, (event_id,))
-    stat_rows = [dict(r) for r in cur.fetchall()]
-
-    conn.close()
-
-    stats_by_period = {"TOTAL": [], "1T": [], "2T": []}
-
-    for row in stat_rows:
-        stats_by_period.setdefault(row["period"], []).append({
-            "name": row["stat_name"],
-            "home": row["home_value"],
-            "away": row["away_value"],
-        })
-
-    return {
-        "event_id": match["event_id"],
-        "date": match["date"],
-        "time": match["time"],
-        "match_info": dict(match),
-        "flat_table": flat_table,
-        "lineups": build_lineups_from_rows(lineup_rows),
-        "stats_by_period": stats_by_period,
+        "stats_by_period": get_stats_by_period_from_rows(stat_rows),
     }
 
 
@@ -240,7 +334,9 @@ def get_last_used_lineup_for_team(team_id):
     cur.execute("""
         SELECT player_name, position, rating
         FROM lineups
-        WHERE event_id = ? AND team_id = ?
+        WHERE event_id = ?
+          AND team_id = ?
+          AND COALESCE(is_substitute, 0) = 0
         ORDER BY
             CASE position
                 WHEN 'POR' THEN 1
@@ -311,43 +407,70 @@ def tabla_api():
     conn = get_connection()
     cur = conn.cursor()
 
-    cur.execute("""
-        SELECT event_id
-        FROM matches
-        ORDER BY start_time DESC
-        LIMIT 1
-    """)
-    latest = cur.fetchone()
+    try:
+        latest = cur.execute("""
+            SELECT event_id, date, time, tournament_name, season_name
+            FROM matches
+            WHERE status IN ('finished', 'Ended', 'ended', 'FT', 'Full time')
+               OR status LIKE '%finish%'
+               OR status LIKE '%Ended%'
+            ORDER BY start_time DESC
+            LIMIT 1
+        """).fetchone()
 
-    if not latest:
+        if latest is None:
+            latest = cur.execute("""
+                SELECT event_id, date, time, tournament_name, season_name
+                FROM matches
+                ORDER BY start_time DESC
+                LIMIT 1
+            """).fetchone()
+
+        if latest is None:
+            return jsonify({
+                "table": [],
+                "event_id": None,
+                "updated": None,
+                "message": "No matches found."
+            })
+
+        rows = cur.execute("""
+            SELECT
+                position,
+                team_name,
+                team_name AS team,
+                played,
+                wins,
+                draws,
+                losses,
+                goals_for,
+                goals_against,
+                goal_diff,
+                goal_diff AS goal_difference,
+                points
+            FROM standings
+            WHERE event_id = ?
+            ORDER BY position ASC
+        """, (latest["event_id"],)).fetchall()
+
+        table = [dict(row) for row in rows]
+
+        return jsonify({
+            "table": table,
+            "event_id": latest["event_id"],
+            "updated": latest["date"],
+            "tournament_name": latest["tournament_name"],
+            "season_name": latest["season_name"]
+        })
+
+    finally:
         conn.close()
-        return jsonify({"table": []})
-
-    cur.execute("""
-        SELECT position,
-               team_name AS team,
-               played,
-               wins,
-               draws,
-               losses,
-               goals_for,
-               goals_against,
-               goal_diff AS goal_difference,
-               points
-        FROM standings
-        WHERE event_id = ?
-        ORDER BY position ASC
-    """, (latest["event_id"],))
-
-    rows = [dict(r) for r in cur.fetchall()]
-    conn.close()
-
-    return jsonify({"table": rows})
 
 
 @app.route("/estadisticas")
 def estadisticas():
     return render_template("estadisticas.html")
+
 
 @app.route("/api/estadisticas")
 def api_estadisticas():
@@ -533,6 +656,7 @@ def api_estadisticas():
         "players": players
     })
 
+
 @app.route("/plantel")
 def plantel():
     return render_template("plantel.html")
@@ -711,9 +835,21 @@ def match_player_detail_api(event_id, player_id):
             rating,
             team_id,
             team_name,
+            team_side,
             shirt_number,
             goals,
-            assists
+            assists,
+            yellow_cards,
+            red_cards,
+            is_substitute,
+            subbed_in,
+            subbed_out,
+            goal_minute,
+            assist_minute,
+            yellow_card_minute,
+            red_card_minute,
+            subbed_in_minute,
+            subbed_out_minute
         FROM lineups
         WHERE event_id = ?
           AND player_id = ?
@@ -739,6 +875,8 @@ def match_player_detail_api(event_id, player_id):
     stats = [dict(r) for r in cur.fetchall()]
     conn.close()
 
+    stats_dict = {row["stat_name"]: row["stat_value"] for row in stats}
+
     return jsonify({
         "player_id": player["player_id"],
         "name": player["player_name"],
@@ -746,9 +884,33 @@ def match_player_detail_api(event_id, player_id):
         "rating": player["rating"],
         "team_id": player["team_id"],
         "team_name": player["team_name"],
+        "team_side": player["team_side"],
         "shirt_number": player["shirt_number"],
-        "goals": player["goals"],
-        "assists": player["assists"],
+
+        "goals": int_from_db(player["goals"]),
+        "assists": int_from_db(player["assists"]),
+        "yellow_cards": int_from_db(player["yellow_cards"]),
+        "red_cards": int_from_db(player["red_cards"]),
+
+        "is_substitute": int_from_db(player["is_substitute"]),
+        "subbed_in": bool_from_db(player["subbed_in"]),
+        "subbed_out": bool_from_db(player["subbed_out"]),
+
+        "goal_minute": player["goal_minute"] or stats_dict.get("goal_minute"),
+        "goal_minutes": player["goal_minute"] or stats_dict.get("goal_minute"),
+        
+        "assist_minute": player["assist_minute"] or stats_dict.get("assist_minute"),
+        "assist_minutes": player["assist_minute"] or stats_dict.get("assist_minute"),
+        
+        "yellow_card_minute": player["yellow_card_minute"] or stats_dict.get("yellow_card_minute"),
+        "yellow_card_minutes": player["yellow_card_minute"] or stats_dict.get("yellow_card_minute"),
+        
+        "red_card_minute": player["red_card_minute"] or stats_dict.get("red_card_minute"),
+        "red_card_minutes": player["red_card_minute"] or stats_dict.get("red_card_minute"),
+        
+        "subbed_in_minute": player["subbed_in_minute"] or stats_dict.get("subbed_in_minute") or stats_dict.get("sub_in_minute"),
+        "subbed_out_minute": player["subbed_out_minute"] or stats_dict.get("subbed_out_minute") or stats_dict.get("sub_out_minute"),
+
         "stats": stats
     })
 

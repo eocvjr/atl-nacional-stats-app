@@ -31,6 +31,7 @@ PAST_FIXTURE_DATES = [
     "2026-04-06",
     "2026-04-11",
     "2026-04-20",
+    "2026-04-25"
     ]
 
 def find_nacional_match_on_date(match_date, team_id=TEAM_ID):

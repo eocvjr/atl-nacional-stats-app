@@ -3,99 +3,185 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Match Detail - Atlético Nacional</title>
-
+  <title>Match Detail - Atletico Nacional</title>
   <link rel="stylesheet" href="{{ url_for('static', filename='match_detail.css') }}">
 </head>
-
 <body data-event-id="{{ event_id }}">
   <div class="container">
     <a class="top-link" href="/calendario">← Volver al calendario</a>
 
-    <div id="loading" class="card">Cargando partido...</div>
-    <div id="error" class="card" style="display:none;"></div>
+    <div id="loading" class="card status-card">Cargando partido...</div>
+    <div id="error" class="card error-card" style="display:none;"></div>
 
-    <div id="content" style="display:none; flex-direction:column; gap:20px;">
-      <div class="card hero">
-        <div class="badge" id="md-tournament">Torneo</div>
+    <div id="content" class="page-stack" style="display:none;">
+      <section class="card hero-card">
+        <div class="hero-top-row">
+          <div class="hero-left-head">
+            <div class="league-chip">
+              <div id="md-league-badge" class="league-badge">LB</div>
+              <div class="league-chip-text">
+                <div id="md-tournament" class="hero-kicker">Liga BetPlay</div>
+                <div id="md-meta" class="hero-sub">Fecha · Hora</div>
+              </div>
+            </div>
 
-        <div class="hero-top">
-          <div>
-            <div class="hero-title" id="md-title">Match Center</div>
-            <div class="hero-sub" id="md-meta">Fecha · Hora</div>
+            <div id="md-title" class="hero-title">Match Center</div>
           </div>
 
-          <div class="status" id="md-status">Estado</div>
+          <div id="md-status" class="status">Estado</div>
         </div>
 
-        <div class="teams-row">
-          <div class="team-block badge-team">
+        <div class="teams-row hero-teams-row">
+          <div class="team-block hero-team-block">
             <div class="team-label">LOCAL</div>
-
             <div class="match-team-badge" id="md-home-badge">AN</div>
-
             <div class="team-name small" id="md-home">Equipo local</div>
+            <div id="hero-home-summary" class="team-summary-list"></div>
           </div>
 
-          <div class="score-box">
+          <div class="score-box score-box-main">
             <div class="score">
               <span id="md-home-score">0</span>
-              <span style="padding:0 8px;">-</span>
+              <span class="score-sep">-</span>
               <span id="md-away-score">0</span>
             </div>
           </div>
 
-          <div class="team-block badge-team">
+          <div class="team-block hero-team-block">
             <div class="team-label">VISITANTE</div>
-
-            <div class="match-team-badge" id="md-away-badge">-</div>
-
+            <div class="match-team-badge" id="md-away-badge">RV</div>
             <div class="team-name small" id="md-away">Equipo visitante</div>
+            <div id="hero-away-summary" class="team-summary-list align-right"></div>
           </div>
         </div>
-      </div>
+      </section>
 
-      <div class="card">
-        <div class="lineup-header">
-          <div>
-            <div class="section-title">Alineación de Atlético Nacional</div>
-            <div class="section-kicker" id="lineup-subtitle">XI registrado para este partido.</div>
+      <section class="card section-switch-card">
+        <div class="section-switch">
+          <button class="section-switch-btn active" data-section="lineup">Lineup</button>
+          <button class="section-switch-btn" data-section="stats">Stats</button>
+          <button class="section-switch-btn" data-section="events">Match Events</button>
+          <button class="section-switch-btn" data-section="table">Table</button>
+        </div>
+      </section>
+
+      <section id="section-lineup" class="section-panel active">
+        <div class="lineup-grid">
+          <aside class="side-rail">
+            <div class="side-card">
+              <div class="side-card-header">
+                <div>
+                  <div class="side-card-title">Substitutes</div>
+                  <div class="side-card-subtitle">Banco de Atletico Nacional</div>
+                </div>
+                <div id="subs-count" class="side-card-count">0</div>
+              </div>
+              <div id="subs-list" class="subs-list">
+                <div class="side-empty">Sin suplentes disponibles.</div>
+              </div>
+            </div>
+          </aside>
+
+          <div class="card lineup-card">
+            <div class="lineup-header">
+              <div>
+                <div class="section-title">Alineacion de Atletico Nacional</div>
+                <div class="section-kicker" id="lineup-subtitle">XI registrado para este partido.</div>
+              </div>
+
+              <div class="formation-pill" id="lineup-formation-pill">4-3-3</div>
+            </div>
+
+            <div class="pitch-shell">
+              <div class="pitch" id="nacional-pitch">
+                <div class="pitch-center-line"></div>
+                <div class="pitch-center-circle"></div>
+                <div class="pitch-dot"></div>
+                <div class="pitch-box top"></div>
+                <div class="pitch-small-box top"></div>
+                <div class="pitch-box bottom"></div>
+                <div class="pitch-small-box bottom"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section id="section-stats" class="section-panel">
+        <div class="card stats-card">
+          <div class="stats-header">
+            <div>
+              <div class="section-title">Estadisticas</div>
+              <div class="section-kicker">Comparacion del partido</div>
+            </div>
+
+            <div class="tab-switch">
+              <button class="active" id="stats-total-btn">ALL</button>
+              <button id="stats-1t-btn">1T</button>
+              <button id="stats-2t-btn">2T</button>
+            </div>
           </div>
 
-          <div class="formation-pill">▦ Formación</div>
-        </div>
+          <div class="stats-head-card">
+            <div class="stats-team-mini">
+              <div class="stats-team-logo" id="stats-home-badge">AN</div>
+              <div class="stats-team-name" id="stats-home-name">Atlético Nacional</div>
+            </div>
 
-        <div class="pitch-shell">
-          <div class="pitch" id="nacional-pitch">
-            <div class="pitch-center-line"></div>
-            <div class="pitch-center-circle"></div>
-            <div class="pitch-dot"></div>
-            <div class="pitch-box top"></div>
-            <div class="pitch-small-box top"></div>
-            <div class="pitch-box bottom"></div>
-            <div class="pitch-small-box bottom"></div>
+            <div id="stats-scoreline" class="stats-score-pill">0 - 0</div>
+
+            <div class="stats-team-mini right">
+              <div class="stats-team-name" id="stats-away-name">Rival</div>
+              <div class="stats-team-logo" id="stats-away-badge">RV</div>
+            </div>
+          </div>
+
+          <div id="md-stats" class="stats-list"></div>
+        </div>
+      </section>
+
+      <section id="section-events" class="section-panel">
+        <div class="card events-card">
+          <div class="events-header">
+            <div>
+              <div class="section-title">Match Events</div>
+              <div class="section-kicker">Goles, tarjetas, cambios y asistencias</div>
+            </div>
+          </div>
+
+          <div id="match-events-list" class="events-timeline">
+            <div class="side-empty">Sin eventos disponibles.</div>
           </div>
         </div>
-      </div>
+      </section>
 
-      <div class="card">
-        <div style="display:flex; justify-content:space-between; align-items:center; gap:12px; flex-wrap:wrap; margin-bottom:14px;">
-          <div class="section-title" style="margin-bottom:0;">Estadísticas</div>
+      <section id="section-table" class="section-panel">
+        <div class="card table-card">
+          <div class="table-card-header">
+            <div class="table-head-left">
+              <div id="table-league-badge" class="league-badge small-badge">LB</div>
+              <div>
+                <div class="section-title">Tabla Liga BetPlay</div>
+                <div class="section-kicker">Posiciones del torneo</div>
+              </div>
+            </div>
+          </div>
 
-          <div class="tab-switch">
-            <button class="active" id="stats-total-btn">Total</button>
-            <button id="stats-1t-btn">1T</button>
-            <button id="stats-2t-btn">2T</button>
+          <div class="table-wrap">
+            <div class="table-head table-grid">
+              <div>#</div>
+              <div>Equipo</div>
+              <div>PJ</div>
+              <div>G</div>
+              <div>E</div>
+              <div>P</div>
+              <div>DG</div>
+              <div>PTS</div>
+            </div>
+            <div id="md-table" class="table-list"></div>
           </div>
         </div>
-
-        <div id="md-stats" class="stats-list"></div>
-      </div>
-
-      <div class="card">
-        <div class="section-title">Tabla Liga BetPlay</div>
-        <div id="md-table" class="table-list"></div>
-      </div>
+      </section>
     </div>
   </div>
 
@@ -112,11 +198,12 @@
         </div>
 
         <h2 id="pm-name" class="player-modal-name">Jugador</h2>
+        <div id="pm-event-badges" class="player-modal-events"></div>
 
         <div class="player-modal-meta">
           <div class="meta-box">
             <div id="pm-position" class="meta-value">-</div>
-            <div class="meta-label">Posición</div>
+            <div class="meta-label">Posicion</div>
           </div>
 
           <div class="meta-box">
