@@ -311,8 +311,8 @@ function percentFromRating(r){
 
   if(isNaN(v)) return 0;
 
-  const c = Math.max(5, Math.min(10, v));
-  return ((c - 5) / 5) * 100;
+  const clamped = Math.max(0, Math.min(10, v));
+  return (clamped / 10) * 100;
 }
 
 function getRatingColor(r){
@@ -581,7 +581,7 @@ function renderPlayers(detail, side = 'nacional'){
   xi.slice(0, 11).forEach(p => {
     const name = p.name || p.player_name || 'Jugador';
     const rating = p.rating ?? '-';
-    const pct = percentFromRating(rating);
+    const pct = percentFromRating(p.rating);
     const { bar, text } = getRatingColor(rating);
 
     const row = document.createElement('div');

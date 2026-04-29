@@ -15,6 +15,10 @@ const PLAYER_IMAGES_BY_ID = {
     Leave this empty for now if you want. The code will use SofaScore's
     player image endpoint by player_id automatically.
   */
+ 1602863: {
+      img: "https://images.fotmob.com/image_resources/playerimages/1579303.png",
+      initials: "SG",
+      name: "Simon Garcia"
 };
 
 const PLAYER_IMAGES_BY_EXACT_NAME = {
@@ -59,13 +63,7 @@ const PLAYER_IMAGES_BY_EXACT_NAME = {
   },
 
   // Ambiguous names. Blank unless confirmed by ID.
-  "Simón García": {
-    img: "",
-    initials: "SG"
-  },
-  "Simon Garcia": {
-    img: "",
-    initials: "SG"
+
   },
   "Robinson García": {
     img: "",
@@ -76,7 +74,7 @@ const PLAYER_IMAGES_BY_EXACT_NAME = {
     initials: "RG"
   },
   "Cristian Uribe": {
-    img: "",
+    img: "https://images.fotmob.com/image_resources/playerimages/1714944.png",
     initials: "CU"
   },
   "Matheus Uribe": {

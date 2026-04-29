@@ -5,8 +5,8 @@
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>Estadísticas - Atlético Nacional</title>
 
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700;800&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="{{ url_for('static', filename='estadisticas.css') }}?v=20">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700;800;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="{{ url_for('static', filename='estadisticas.css') }}?v=32">
 </head>
 
 <body>
@@ -14,13 +14,15 @@
     <a class="top-link" href="/">← Volver al dashboard</a>
 
     <header class="stats-header">
-      <div class="page-kicker">TEMPORADA 2026-I</div>
-      <h1>Estadísticas</h1>
-      <p>Resumen del rendimiento de Atlético Nacional</p>
+      <div>
+        <div class="page-kicker">TEMPORADA 2026-I</div>
+        <h1>Estadísticas</h1>
+        <p>Resumen del rendimiento de Atlético Nacional y líderes del plantel.</p>
+      </div>
     </header>
 
-    <section class="stats-layout">
-      <div class="card team-panel">
+    <section class="stats-main-grid">
+      <div class="card team-panel team-stats-card">
         <div class="panel-head">
           <div>
             <div class="panel-kicker">Equipo</div>
@@ -28,120 +30,88 @@
           </div>
         </div>
 
-        <div class="team-kpis">
-          <div class="kpi-card">
-            <span class="kpi-label">Partidos</span>
-            <strong id="kpi-matches">0</strong>
-          </div>
-
-          <div class="kpi-card">
-            <span class="kpi-label">Puntos</span>
+        <div class="team-stat-hero-grid">
+          <div class="team-stat-main">
+            <span class="team-stat-label">Puntos</span>
             <strong id="kpi-points">0</strong>
           </div>
 
-          <div class="kpi-card">
-            <span class="kpi-label">Goles a favor</span>
+          <div class="team-stat-main">
+            <span class="team-stat-label">Partidos</span>
+            <strong id="kpi-matches">0</strong>
+          </div>
+
+          <div class="team-stat-main">
+            <span class="team-stat-label">Diferencia de gol</span>
+            <strong id="team-goal-diff">-</strong>
+          </div>
+        </div>
+
+        <div class="team-stat-grid">
+          <div class="team-stat-cell">
+            <span>Victorias</span>
+            <strong id="sum-wins">0</strong>
+          </div>
+
+          <div class="team-stat-cell">
+            <span>Empates</span>
+            <strong id="sum-draws">0</strong>
+          </div>
+
+          <div class="team-stat-cell">
+            <span>Derrotas</span>
+            <strong id="sum-losses">0</strong>
+          </div>
+
+          <div class="team-stat-cell">
+            <span>Goles a favor</span>
             <strong id="kpi-gf">0</strong>
           </div>
 
-          <div class="kpi-card">
-            <span class="kpi-label">Goles en contra</span>
+          <div class="team-stat-cell">
+            <span>Goles en contra</span>
             <strong id="kpi-ga">0</strong>
           </div>
-        </div>
 
-        <div class="team-summary-grid">
-          <div class="summary-card">
-            <div class="summary-title">Promedio de partido</div>
-            <div class="summary-value" id="team-rating">-</div>
-            <div class="summary-sub">Promedio del equipo</div>
+          <div class="team-stat-cell">
+            <span>Goles / partido</span>
+            <strong id="team-goals-per-match">-</strong>
           </div>
 
-          <div class="summary-card">
-            <div class="summary-title">Goles por partido</div>
-            <div class="summary-value" id="team-goals-per-match">-</div>
-            <div class="summary-sub">Producción ofensiva</div>
+          <div class="team-stat-cell">
+            <span>GC / partido</span>
+            <strong id="team-conceded-per-match">-</strong>
           </div>
 
-          <div class="summary-card">
-            <div class="summary-title">GC por partido</div>
-            <div class="summary-value" id="team-conceded-per-match">-</div>
-            <div class="summary-sub">Solidez defensiva</div>
-          </div>
-
-          <div class="summary-card">
-            <div class="summary-title">Diferencia de gol</div>
-            <div class="summary-value" id="team-goal-diff">-</div>
-            <div class="summary-sub">Balance general</div>
-          </div>
-
-          <div class="summary-card">
-            <div class="summary-title">Victorias</div>
-            <div class="summary-value" id="team-wins">-</div>
-            <div class="summary-sub">Partidos ganados</div>
-          </div>
-
-          <div class="summary-card">
-            <div class="summary-title">Clean sheets</div>
-            <div class="summary-value" id="team-clean-sheets">-</div>
-            <div class="summary-sub">Arcos en cero</div>
+          <div class="team-stat-cell">
+            <span>Arcos en cero</span>
+            <strong id="team-clean-sheets">-</strong>
           </div>
         </div>
 
-        <div class="team-details-card">
-          <div class="section-mini-title">Resumen general</div>
-
-          <div class="detail-grid">
-            <div class="detail-row">
-              <span>Victorias</span>
-              <strong id="sum-wins">0</strong>
-            </div>
-
-            <div class="detail-row">
-              <span>Empates</span>
-              <strong id="sum-draws">0</strong>
-            </div>
-
-            <div class="detail-row">
-              <span>Derrotas</span>
-              <strong id="sum-losses">0</strong>
-            </div>
-
-            <div class="detail-row">
-              <span>Diferencia de gol</span>
-              <strong id="sum-gd">0</strong>
-            </div>
-
-            <div class="detail-row">
-              <span>Goles por partido</span>
-              <strong id="sum-gpg">0.00</strong>
-            </div>
-
-            <div class="detail-row">
-              <span>GC por partido</span>
-              <strong id="sum-gapg">0.00</strong>
-            </div>
-          </div>
-
-          <div class="form-block">
-            <div class="section-mini-title">Forma reciente</div>
-            <div id="recent-form" class="recent-form"></div>
-          </div>
+        <div class="form-block">
+          <div class="section-mini-title">Forma reciente</div>
+          <div id="recent-form" class="recent-form"></div>
         </div>
+
+        <!-- Hidden compatibility IDs for current JS -->
+        <span id="team-rating" hidden>-</span>
+        <span id="team-wins" hidden>-</span>
+        <span id="sum-gd" hidden>-</span>
+        <span id="sum-gpg" hidden>-</span>
+        <span id="sum-gapg" hidden>-</span>
       </div>
 
       <div class="card player-panel">
         <div class="panel-head">
           <div>
             <div class="panel-kicker">Jugadores</div>
-            <h2>Líderes del plantel</h2>
+            <h2>Consulta de jugador</h2>
           </div>
         </div>
 
-        <div id="leaders-grid" class="leaders-grid"></div>
-
         <div class="player-lookup-card">
-          <div class="section-mini-title">Consulta rápida</div>
+          <div class="section-mini-title">Buscar jugador</div>
 
           <div class="player-lookup">
             <select id="player-select"></select>
@@ -156,8 +126,17 @@
         </div>
       </div>
     </section>
+
+    <section class="leaders-section">
+      <div class="section-heading">
+        <h2>Top stats</h2>
+        <p>Líderes del plantel por categoría.</p>
+      </div>
+
+      <div id="leaders-grid" class="leaders-grid"></div>
+    </section>
   </div>
 
-  <script src="{{ url_for('static', filename='estadisticas.js') }}?v=20"></script>
+  <script src="{{ url_for('static', filename='estadisticas.js') }}?v=32"></script>
 </body>
 </html>

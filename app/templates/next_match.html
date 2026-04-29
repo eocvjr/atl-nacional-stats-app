@@ -9,50 +9,159 @@
 </head>
 
 <body>
-  <div class="container">
-    <a class="top-link" href="/">← Volver al dashboard</a>
+  <div class="next-page">
+    <a class="back-link" href="/">← Volver al dashboard</a>
 
-    <section class="hero">
-      <div class="eyebrow">Previa del partido</div>
-      <h1 id="match-title">Cargando previa...</h1>
-      <div class="match-meta" id="match-meta"></div>
+    <section class="match-hero">
+      <div class="hero-topline">
+        <div class="match-context">
+          <span class="competition-dot league-logo" id="hero-league-logo">LB</span>
+          <span id="nm-tournament">Primera A, Apertura</span>
+        </div>
+      </div>
 
-      <div class="teams">
-        <div class="team">
-          <div class="team-label">Local</div>
-          <div class="team-name" id="home-team">-</div>
+      <div class="match-meta-row">
+        <span id="nm-date">--/--/----</span>
+        <span>·</span>
+        <span id="nm-time">--:--</span>
+        <span>·</span>
+        <span id="nm-stadium">Estadio por confirmar</span>
+      </div>
+
+      <div class="match-scoreboard">
+        <div class="match-team">
+          <div class="team-logo" id="home-logo">OC</div>
+          <div class="team-name" id="home-team">Local</div>
         </div>
 
-        <div class="vs">VS</div>
-
-        <div class="team">
-          <div class="team-label">Visitante</div>
-          <div class="team-name" id="away-team">-</div>
+        <div class="match-center">
+          <div class="match-status-pill" id="match-status">Previa</div>
+          <div class="match-time-main" id="match-time-main">18:00</div>
+          <div class="match-date-small" id="match-date-small">01/05/2026</div>
         </div>
+
+        <div class="match-team">
+          <div class="team-logo" id="away-logo">AN</div>
+          <div class="team-name" id="away-team">Visitante</div>
+        </div>
+      </div>
+
+      <div class="hero-tabs">
+        <button class="active">Previa</button>
       </div>
     </section>
 
-    <div class="grid">
-      <section class="card">
-        <h2 class="section-title">Última alineación de Nacional</h2>
-        <div class="section-subtitle">Usada como referencia previa al próximo partido.</div>
+    <div class="next-grid">
+      <main class="next-main">
+        <section class="preview-card">
+          <div class="section-head centered">
+            <h2>Previa</h2>
+          </div>
 
-        <div id="nacional-lineup" class="lineup-list">
-          <div class="muted">Cargando...</div>
-        </div>
-      </section>
+          <div class="preview-copy">
+            <div class="preview-badge">
+              <span>VS</span>
+            </div>
 
-      <section class="card">
-        <h2 class="section-title">Cuotas</h2>
-        <div class="section-subtitle">Mercado principal disponible.</div>
+            <div>
+              <h3 id="preview-title">Once Caldas recibe a Atlético Nacional</h3>
+              <p id="preview-text">
+                Previa del próximo partido de Atlético Nacional con información de torneo, horario, estadio y cuotas disponibles.
+              </p>
+            </div>
+          </div>
+        </section>
 
-        <div id="odds" class="odds-grid">
-          <div class="muted">Cargando cuotas...</div>
-        </div>
-      </section>
+        <section class="lineup-card">
+          <div class="lineup-header">
+            <div class="lineup-side">
+              <div class="mini-logo nacional-mini">
+                <img src="https://images.fotmob.com/image_resources/logo/teamlogo/6368.png" alt="Atlético Nacional">
+              </div>
+              <span>Atlético Nacional</span>
+            </div>
+
+            <div class="lineup-title">Última alineación</div>
+
+            <div class="formation-pill" id="formation-pill">4-5-1</div>
+          </div>
+
+          <div class="mini-pitch" id="last-lineup-pitch">
+            <div class="pitch-line center"></div>
+            <div class="pitch-circle"></div>
+            <div class="box top"></div>
+            <div class="box bottom"></div>
+
+            <div class="lineup-list" id="last-lineup-list">
+              <!-- JS fills this -->
+            </div>
+          </div>
+        </section>
+      </main>
+
+      <aside class="next-side">
+        <section class="side-card odds-card">
+          <h2> Lineas de Apuesta</h2>
+
+          <div class="odds-teams">
+            <div class="odds-team-logo" id="odds-home-logo">OC</div>
+            <div class="odds-x">X</div>
+            <div class="odds-team-logo" id="odds-away-logo">AN</div>
+          </div>
+
+          <div class="odds-list" id="odds-list">
+            <div class="odd-box">
+              <span>1</span>
+              <strong id="odd-home">-</strong>
+            </div>
+
+            <div class="odd-box">
+              <span>X</span>
+              <strong id="odd-draw">-</strong>
+            </div>
+
+            <div class="odd-box">
+              <span>2</span>
+              <strong id="odd-away">-</strong>
+            </div>
+          </div>
+        </section>
+
+        <section class="side-card info-card">
+          <div class="info-row">
+            <span>📍</span>
+            <div>
+              <strong id="info-stadium">Estadio por confirmar</strong>
+              <small></small>
+            </div>
+          </div>
+
+          <div class="info-row">
+            <span class="info-icon league-logo" id="info-league-logo">LB</span>
+            <div>
+              <strong id="info-tournament">Primera A, Apertura</strong>
+              <small></small>
+            </div>
+          </div>
+
+          <div class="info-row">
+            <span>🗓️</span>
+            <div>
+              <strong id="info-date">--/--/----</strong>
+              <small></small>
+            </div>
+          </div>
+        </section>
+
+        <section class="side-card insight-card">
+          <h2>Match insight</h2>
+          <p id="match-insight">
+            Atlético Nacional llega como visitante para este próximo compromiso de Liga BetPlay.
+          </p>
+        </section>
+      </aside>
     </div>
   </div>
 
   <script src="{{ url_for('static', filename='next_match.js') }}"></script>
 </body>
-</html>

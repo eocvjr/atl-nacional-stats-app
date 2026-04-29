@@ -215,6 +215,36 @@ const LEAGUE_BADGES = {
   "sudamericana": "https://images.fotmob.com/image_resources/logo/leaguelogo/9472.png"
 };
 
+function translateStatLabel(label){
+  const map = {
+    "Posición": "Posición",
+    "Minutes played": "Minutos jugados",
+    "Goals": "Goles",
+    "Expected goals (xG)": "Goles esperados (xG)",
+    "Assists": "Asistencias",
+    "Expected assists (xA)": "Asistencias esperadas (xA)",
+    "Key passes": "Pases clave",
+    "Crosses": "Centros",
+    "Accurate crosses": "Centros precisos",
+    "Accurate passes": "Pases precisos",
+    "Total passes": "Pases totales",
+    "Long balls": "Balones largos",
+    "Accurate long balls": "Balones largos precisos",
+    "Total shots": "Remates totales",
+    "Shots on target": "Remates al arco",
+    "Touches": "Toques",
+    "Possession lost": "Posesión perdida",
+    "Recoveries": "Recuperaciones",
+    "Tackles": "Entradas",
+    "Interceptions": "Intercepciones",
+    "Clearances": "Despejes",
+    "Fouls": "Faltas",
+    "Dribbled past": "Regateado"
+  };
+
+  return map[label] || label;
+}
+
 function escapeHTML(value){
   return String(value ?? "")
     .replaceAll("&", "&amp;")
@@ -485,7 +515,7 @@ function modalStatRow(label, value){
 
   return `
     <div class="modal-stat-row">
-      <div class="modal-stat-name">${escapeHTML(label)}</div>
+      <div class="modal-stat-name">${escapeHTML(translateStatLabel(label))}</div>
       <div class="modal-stat-value">${escapeHTML(formatted)}</div>
     </div>
   `;
@@ -1580,8 +1610,25 @@ function openPlayerModal(player, teamName){
 
   safeText("pm-name", name);
   safeText("pm-position", position);
-  safeText("pm-team", teamName || player.team_name || "Atlético Nacional");
   safeText("pm-rating-meta", rating);
+  
+  const modalTeamName = teamName || player.team_name || "Atlético Nacional";
+  const teamBadge = getTeamBadge(modalTeamName);
+  const teamEl = document.getElementById("pm-team");
+  
+  if(teamEl){
+    if(teamBadge){
+    teamEl.innerHTML = `
+      <img
+        class="pm-team-badge"
+        src="${teamBadge}"
+        alt="${escapeHTML(modalTeamName)}"
+      >
+    `;
+  } else {
+    teamEl.textContent = modalTeamName;
+  }
+}
 
   if(avatar){
     if(imageUrl){

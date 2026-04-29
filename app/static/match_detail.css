@@ -529,11 +529,11 @@ button{
 
 .pitch-center-line{
   position:absolute;
-  top:14px;
-  bottom:14px;
-  left:50%;
-  width:3px;
-  transform:translateX(-50%);
+  left:14px;
+  right:14px;
+  top:48%;
+  height:3px;
+  transform:translateY(-50%);
   background:rgba(255,255,255,.16);
   z-index:1;
 }
@@ -2126,4 +2126,181 @@ button{
   .stats-team-mini,.stats-team-mini.right{justify-content:center;text-align:center;}
   .table-wrap{overflow-x:auto;}
   .table-grid,.table-row{min-width:720px;}
+}
+
+/* =========================================================
+   FINAL PLAYER MODAL FIX - APPENDED ONLY
+   Keep the overlay full screen and only size the card.
+========================================================= */
+.player-modal{
+  position:fixed !important;
+  inset:0 !important;
+  width:100vw !important;
+  height:100vh !important;
+  max-width:none !important;
+  border-radius:0 !important;
+  z-index:9999 !important;
+}
+
+.player-modal-panel{
+  position:absolute !important;
+  top:50% !important;
+  left:50% !important;
+  transform:translate(-50%, -50%) !important;
+  width:min(420px, 92vw) !important;
+  max-width:420px !important;
+  max-height:86vh !important;
+  border-radius:18px !important;
+  overflow:hidden !important;
+}
+
+.player-modal-header{
+  padding:26px 24px 14px !important;
+  text-align:center !important;
+}
+
+.player-modal-avatar-wrap{
+  width:82px !important;
+  margin:0 auto 12px !important;
+}
+
+.player-modal-avatar,
+#pm-avatar{
+  width:82px !important;
+  height:82px !important;
+  margin:0 auto !important;
+  border-width:3px !important;
+}
+
+.player-modal-avatar img,
+#pm-avatar img{
+  width:100% !important;
+  height:100% !important;
+  object-fit:cover !important;
+}
+
+.player-modal-rating,
+#pm-rating-badge{
+  top:2px !important;
+  right:-9px !important;
+  min-width:36px !important;
+  height:24px !important;
+  padding:0 8px !important;
+  font-size:13px !important;
+  border-radius:999px !important;
+}
+
+.player-modal-name,
+#pm-name{
+  font-size:18px !important;
+  line-height:1.1 !important;
+  font-weight:850 !important;
+  letter-spacing:-.02em !important;
+  margin:8px 0 12px !important;
+  text-align:center !important;
+}
+
+.player-modal-events,
+#pm-event-badges{
+  margin:0 auto 14px !important;
+  display:flex !important;
+  justify-content:center !important;
+  flex-wrap:wrap !important;
+  gap:8px !important;
+}
+
+.player-modal-event{
+  min-height:26px !important;
+  padding:6px 12px !important;
+  font-size:11px !important;
+  border-radius:999px !important;
+}
+
+.player-modal-meta{
+  margin:0 !important;
+  display:grid !important;
+  grid-template-columns:repeat(3, 1fr) !important;
+  border-radius:0 !important;
+  border-left:0 !important;
+  border-right:0 !important;
+  background:rgba(255,255,255,.035) !important;
+}
+
+.meta-box{
+  min-height:76px !important;
+  padding:12px 8px !important;
+  display:flex !important;
+  flex-direction:column !important;
+  align-items:center !important;
+  justify-content:center !important;
+  border-right:1px solid rgba(255,255,255,.07) !important;
+}
+
+.meta-box:last-child{
+  border-right:0 !important;
+}
+
+.meta-value,
+#pm-position,
+#pm-team,
+#pm-rating-meta{
+  min-height:34px !important;
+  display:flex !important;
+  align-items:center !important;
+  justify-content:center !important;
+  text-align:center !important;
+  font-size:15px !important;
+  line-height:1 !important;
+  font-weight:850 !important;
+  color:#f6f8fb !important;
+}
+
+#pm-team{
+  padding:0 !important;
+}
+
+.pm-team-badge{
+  width:34px !important;
+  height:34px !important;
+  object-fit:contain !important;
+  display:block !important;
+  margin:0 auto !important;
+  transform:none !important;
+  filter:drop-shadow(0 5px 10px rgba(0,0,0,.35)) !important;
+}
+
+.meta-label{
+  margin-top:7px !important;
+  font-size:10px !important;
+  line-height:1 !important;
+  letter-spacing:.10em !important;
+  font-weight:800 !important;
+  color:#aeb8c4 !important;
+  text-align:center !important;
+}
+
+.player-modal-body{
+  padding:0 20px 22px !important;
+  max-height:48vh !important;
+}
+
+.modal-section-title{
+  margin:0 -20px 0 !important;
+  padding:14px 20px 11px !important;
+  font-size:13px !important;
+  letter-spacing:.08em !important;
+}
+
+.modal-stat-row{
+  padding:12px 0 !important;
+}
+
+.modal-stat-name{
+  font-size:13px !important;
+  font-weight:600 !important;
+}
+
+.modal-stat-value{
+  font-size:14px !important;
+  font-weight:850 !important;
 }

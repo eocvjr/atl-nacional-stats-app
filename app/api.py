@@ -1,6 +1,6 @@
 import requests
 import time
-from datetime import date, datetime
+from datetime import date, datetime, timedelta
 import os
 import json
 from dotenv import load_dotenv
@@ -64,41 +64,54 @@ def normalize_name(value):
     return text
 
 
-def get_scheduled_events_today():
-    url = f"{BASE}/api/v1/sport/football/scheduled-events/{TODAY}"
+def get_scheduled_events_by_date(match_date):
+    """
+    Fetch all scheduled football events for one date.
+    match_date should be a string like '2026-04-29'.
+    """
+    url = f"{BASE}/api/v1/sport/football/scheduled-events/{match_date}"
     data = safe_get_json(url)
-    return data.get("events", [])
+
+    if isinstance(data, dict) and data.get("_rate_limited"):
+        return {"_rate_limited": True}
+
+    return data.get("events", []) if isinstance(data, dict) else []
 
 
-# Known remaining Liga BetPlay 2026-I fixture dates for Nacional
-NACIONAL_FIXTURE_DATES = [
-    "2026-04-20",  # Fecha 17 - Nacional vs Bucaramanga
-    "2026-04-25",  # Fecha 18 - Pereira vs Nacional
-    # Fecha 19 (Once Caldas vs Nacional) - date TBD, add when confirmed
-]
+def get_scheduled_events_today():
+    today_str = date.today().strftime("%Y-%m-%d")
+    events = get_scheduled_events_by_date(today_str)
 
-def get_next_team_events(team_id, fixture_dates=NACIONAL_FIXTURE_DATES):
+    if isinstance(events, dict) and events.get("_rate_limited"):
+        return events
+
+    return events
+
+
+def get_next_team_events(team_id=TEAM_ID, days_ahead=90):
+    """
+    Look forward from today and return the next scheduled event involving team_id.
+    This avoids hardcoded fixture dates going stale.
+    """
     today = date.today()
 
-    for match_date in fixture_dates:
-        if match_date < today.strftime("%Y-%m-%d"):
-            continue  # skip past dates
+    for offset in range(days_ahead + 1):
+        match_date = today + timedelta(days=offset)
+        match_date_str = match_date.strftime("%Y-%m-%d")
 
-        url = f"{BASE}/api/v1/sport/football/scheduled-events/{match_date}"
-        data = safe_get_json(url)
+        events = get_scheduled_events_by_date(match_date_str)
 
-        if isinstance(data, dict) and data.get("_rate_limited"):
+        if isinstance(events, dict) and events.get("_rate_limited"):
             return {"_rate_limited": True}
-
-        events = data.get("events", [])
 
         for event in events:
             home_id = event.get("homeTeam", {}).get("id")
             away_id = event.get("awayTeam", {}).get("id")
+
             if home_id == team_id or away_id == team_id:
                 return [event]
 
-        time.sleep(0.5)
+        time.sleep(0.25)
 
     return []
 
@@ -134,6 +147,34 @@ def find_team_match_today(team_id=TEAM_ID):
     return matching_events
 
 
+def extract_stadium_from_event(event):
+    venue = event.get("venue", {}) or {}
+
+    return (
+        venue.get("name")
+        or venue.get("stadium", {}).get("name")
+        or venue.get("stadiumName")
+        or venue.get("shortName")
+        or event.get("ground", {}).get("name")
+        or event.get("stadium", {}).get("name")
+        or event.get("venueName")
+        or None
+    )
+
+def extract_stadium_from_event(event):
+    venue = event.get("venue", {}) or {}
+
+    return (
+        venue.get("name")
+        or venue.get("stadium", {}).get("name")
+        or venue.get("stadiumName")
+        or venue.get("shortName")
+        or event.get("ground", {}).get("name")
+        or event.get("stadium", {}).get("name")
+        or event.get("venueName")
+        or None
+    )
+
 def get_match_info(event_id):
     url = f"{BASE}/api/v1/event/{event_id}"
     data = safe_get_json(url)
@@ -154,20 +195,15 @@ def get_match_info(event_id):
             "stadium": None,
         }
 
-    event = data.get("event", {})
-    tournament = event.get("tournament", {})
-    unique_tournament = tournament.get("uniqueTournament", {})
-    season = event.get("season", {})
+    event = data.get("event", {}) or {}
+    tournament = event.get("tournament", {}) or {}
+    unique_tournament = tournament.get("uniqueTournament", {}) or {}
+    season = event.get("season", {}) or {}
 
     home_score = event.get("homeScore", {}).get("current")
     away_score = event.get("awayScore", {}).get("current")
 
-    venue = event.get("venue", {}) or {}
-    stadium = (
-        venue.get("name")
-        or venue.get("stadium", {}).get("name")
-        or event.get("ground", {}).get("name")
-    )
+    stadium = extract_stadium_from_event(event)
 
     return {
         "home_team": event.get("homeTeam", {}).get("name"),
@@ -178,7 +214,7 @@ def get_match_info(event_id):
         "away_score": 0 if away_score is None else away_score,
         "status": event.get("status", {}).get("description"),
         "start_time": event.get("startTimestamp"),
-        "tournament_name": unique_tournament.get("name"),
+        "tournament_name": unique_tournament.get("name") or tournament.get("name"),
         "country_name": tournament.get("category", {}).get("name"),
         "season_name": season.get("name"),
         "stadium": stadium,
@@ -1551,68 +1587,110 @@ def get_lineups(event_id):
         "away_subs": away_subs,
     }
 
-
 def get_next_match(team_id=TEAM_ID):
-    events = get_next_team_events(team_id)
+    events = get_next_team_events(team_id=team_id, days_ahead=90)
 
     if isinstance(events, dict) and events.get("_rate_limited"):
-        return None
+        return {
+            "home_team": None,
+            "away_team": None,
+            "status": "Límite de API alcanzado",
+            "message": "Rate limited while fetching next match."
+        }
 
     if not events:
         return None
 
-    next_event = events[0]
+    event = events[0]
+    event_id = event.get("id")
+    
+    full_info = {}
+    if event_id:
+        try:
+            full_info = get_match_info(event_id) or {}
+        except Exception as e:
+            print("Could not fetch full next match info:", e)
+            full_info = {}
 
-    home_team = next_event.get("homeTeam", {})
-    away_team = next_event.get("awayTeam", {})
-    tournament = next_event.get("tournament", {})
-    unique_tournament = tournament.get("uniqueTournament", {})
-    season = next_event.get("season", {})
+    home_team = event.get("homeTeam", {}) or {}
+    away_team = event.get("awayTeam", {}) or {}
+    tournament = event.get("tournament", {}) or {}
+    unique_tournament = tournament.get("uniqueTournament", {}) or {}
+    season = event.get("season", {}) or {}
+    status = event.get("status", {}) or {}
 
     home_team_id = home_team.get("id")
     away_team_id = away_team.get("id")
 
-    is_home = home_team_id == team_id
-    opponent = away_team.get("name") if is_home else home_team.get("name")
-    venue_label = "Local" if is_home else "Visitante"
+    start_timestamp = event.get("startTimestamp")
+    match_date, match_time = format_timestamp(start_timestamp)
 
-    tournament_id = unique_tournament.get("id")
-    season_id = season.get("id")
+    if home_team_id == team_id:
+        opponent = away_team.get("name")
+        venue_label = "Local"
+    elif away_team_id == team_id:
+        opponent = home_team.get("name")
+        venue_label = "Visitante"
+    else:
+        opponent = None
+        venue_label = "-"
 
-    standings = []
-    if tournament_id and season_id:
-        standings = get_table(tournament_id, season_id)
+    home_position = None
+    away_position = None
 
-    positions = extract_team_positions(
-        standings,
-        home_team_id,
-        away_team_id
-    )
+    try:
+        tournament_id = unique_tournament.get("id")
+        season_id = season.get("id")
 
-    match_date, match_time = format_timestamp(next_event.get("startTimestamp"))
+        if tournament_id and season_id:
+            table = get_flat_standings(tournament_id, season_id)
 
-    event_id = next_event.get("id")
-    stadium = None
+            for row in table:
+                row_team = row.get("team_name") or row.get("team")
+                row_team_normalized = normalize_name(row_team)
 
-    if event_id:
-        match_info = get_match_info(event_id)
-        stadium = match_info.get("stadium")
+                if row_team_normalized == normalize_name(home_team.get("name")):
+                    home_position = row.get("position")
+
+                if row_team_normalized == normalize_name(away_team.get("name")):
+                    away_position = row.get("position")
+    except Exception as e:
+        print("Could not fetch standings for next match:", e)
 
     return {
-        "event_id": event_id,
+        "event_id": event.get("id"),
+
         "home_team": home_team.get("name"),
         "away_team": away_team.get("name"),
-        "home_position": positions.get("home_position"),
-        "away_position": positions.get("away_position"),
-        "opponent": opponent,
-        "venue_label": venue_label,
-        "stadium": stadium,
-        "tournament_name": unique_tournament.get("name"),
-        "country_name": tournament.get("category", {}).get("name"),
-        "season_name": season.get("name"),
+        "home_team_id": home_team_id,
+        "away_team_id": away_team_id,
+
+        "home_score": event.get("homeScore", {}).get("current"),
+        "away_score": event.get("awayScore", {}).get("current"),
+
+        "status": status.get("description") or status.get("type") or "Programado",
+        "start_timestamp": start_timestamp,
+        "start_time": start_timestamp,
         "date": match_date,
         "time": match_time,
-        "status": next_event.get("status", {}).get("description"),
+
+        "tournament_id": unique_tournament.get("id"),
+        "season_id": season.get("id"),
+        "tournament_name": unique_tournament.get("name") or tournament.get("name"),
+        "country_name": tournament.get("category", {}).get("name"),
+        "season_name": season.get("name"),
+
+        "opponent": opponent,
+        "venue_label": venue_label,
+
+        "home_position": home_position if home_position is not None else "-",
+        "away_position": away_position if away_position is not None else "-",
+
+        "stadium": (
+            full_info.get("stadium")
+            or extract_stadium_from_event(event)
+            or "Estadio por confirmar"
+),
     }
 
 def get_full_match_center(event_id, tournament_id, season_id):

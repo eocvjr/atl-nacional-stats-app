@@ -1,26 +1,8 @@
 const NACIONAL_ID = 6106;
 
-// --------- PLAYER IMAGES: ID FIRST, NEVER LOOSE NAME MATCH ---------
-const PLAYER_IMAGES_BY_ID = {
-  /*
-    Optional manual overrides using YOUR DB/API player_id.
-
-    Example:
-    123456: {
-      img: "https://images.fotmob.com/image_resources/playerimages/50065.png",
-      initials: "DO",
-      name: "David Ospina"
-    }
-
-    Leave this empty for now if you want. The code will use SofaScore's
-    player image endpoint by player_id automatically.
-  */
-};
+const PLAYER_IMAGES_BY_ID = {};
 
 const PLAYER_IMAGES_BY_EXACT_NAME = {
-  // Exact-name fallback only. No generic surname keys.
-  // This page is Nacional-only, so exact-name fallback is safe if player_id is missing.
-
   "David Ospina": {
     img: "https://images.fotmob.com/image_resources/playerimages/50065.png",
     initials: "DO"
@@ -57,8 +39,6 @@ const PLAYER_IMAGES_BY_EXACT_NAME = {
     img: "https://images.fotmob.com/image_resources/playerimages/174813.png",
     initials: "MC"
   },
-
-  // Ambiguous names. Blank unless confirmed by ID.
   "Simón García": {
     img: "",
     initials: "SG"
@@ -83,7 +63,6 @@ const PLAYER_IMAGES_BY_EXACT_NAME = {
     img: "https://images.fotmob.com/image_resources/playerimages/320618.png",
     initials: "MU"
   },
-
   "César Haydar": {
     img: "https://images.fotmob.com/image_resources/playerimages/1139171.png",
     initials: "CH"
@@ -171,27 +150,26 @@ const PLAYER_IMAGES_BY_EXACT_NAME = {
 };
 
 const LEADER_CATEGORIES = [
-  { title:"Rating", subtitle:"Mejor promedio", field:"avg_rating", decimals:2 },
-  { title:"Goles", subtitle:"Máximo goleador", field:"goals", decimals:0 },
-  { title:"Asistencias", subtitle:"Máximo asistidor", field:"assists", decimals:0 },
-  { title:"G + A", subtitle:"Goles + asistencias", field:"goals_assists", decimals:0 },
-  { title:"xG", subtitle:"Expected goals", field:"xg_scored", decimals:2 },
-  { title:"xA", subtitle:"Expected assists", field:"xa_assisted", decimals:2 },
-  { title:"xG + xA", subtitle:"Producción esperada", field:"xg_xa", decimals:2 },
-  { title:"Penales", subtitle:"Penales convertidos", field:"penalty_goals", decimals:0 },
-  { title:"Big chances missed", subtitle:"Ocasiones claras falladas", field:"big_chances_missed", decimals:0 },
-  { title:"Big chances created", subtitle:"Ocasiones claras creadas", field:"big_chances_created", decimals:0 },
-  { title:"Acc. passes", subtitle:"Pases precisos por partido", field:"accurate_passes_per_match", decimals:1 },
-  { title:"Key passes", subtitle:"Pases clave por partido", field:"key_passes_per_match", decimals:1 },
-  { title:"Dribbles", subtitle:"Regates exitosos por partido", field:"successful_dribbles_per_match", decimals:1 },
-  { title:"Penalties won", subtitle:"Penales ganados", field:"penalties_won", decimals:0 },
-  { title:"Tackles", subtitle:"Entradas por partido", field:"tackles_per_match", decimals:1 },
-  { title:"Interceptions", subtitle:"Intercepciones por partido", field:"interceptions_per_match", decimals:1 },
-  { title:"Clearances", subtitle:"Despejes por partido", field:"clearances_per_match", decimals:1 },
-  { title:"Def. contributions", subtitle:"Tackles + INT + clearances", field:"defensive_contributions_per_match", decimals:1 },
-  { title:"Dispossessed", subtitle:"Pérdidas por partido", field:"dispossessed_per_match", decimals:1 },
-  { title:"Yellow cards", subtitle:"Tarjetas amarillas", field:"yellow_cards", decimals:0 },
-  { title:"Red cards", subtitle:"Tarjetas rojas", field:"red_cards", decimals:0 }
+  { title:"Goles", field:"goals", decimals:0 },
+  { title:"Asistencias", field:"assists", decimals:0 },
+  { title:"Goles + asistencias", field:"goals_assists", decimals:0 },
+  { title:"Rating", field:"avg_rating", decimals:2 },
+  { title:"xG", field:"xg_scored", decimals:2 },
+  { title:"xA", field:"xa_assisted", decimals:2 },
+  { title:"xG + xA", field:"xg_xa", decimals:2 },
+  { title:"Penales convertidos", field:"penalty_goals", decimals:0 },
+  { title:"Grandes ocasiones creadas", field:"big_chances_created", decimals:0 },
+  { title:"Grandes ocasiones falladas", field:"big_chances_missed", decimals:0 },
+  { title:"Pases precisos", field:"accurate_passes_per_match", decimals:1 },
+  { title:"Pases clave", field:"key_passes_per_match", decimals:1 },
+  { title:"Regates exitosos", field:"successful_dribbles_per_match", decimals:1 },
+  { title:"Entradas", field:"tackles_per_match", decimals:1 },
+  { title:"Intercepciones", field:"interceptions_per_match", decimals:1 },
+  { title:"Despejes", field:"clearances_per_match", decimals:1 },
+  { title:"Acciones defensivas", field:"defensive_contributions_per_match", decimals:1 },
+  { title:"Pérdidas", field:"dispossessed_per_match", decimals:1 },
+  { title:"Amarillas", field:"yellow_cards", decimals:0 },
+  { title:"Rojas", field:"red_cards", decimals:0 }
 ];
 
 let PLAYERS = [];
@@ -249,12 +227,10 @@ function playerImageData(player, options = {}){
   const playerId = getPlayerId(player);
   const playerName = player?.player_name || player?.name || "";
 
-  // 1. Best: manual override by DB/API player_id.
   if(playerId && PLAYER_IMAGES_BY_ID[playerId]){
     return PLAYER_IMAGES_BY_ID[playerId];
   }
 
-  // 2. Safe: SofaScore image by exact player_id.
   if(playerId){
     return {
       img: `https://api.sofascore.app/api/v1/player/${playerId}/image`,
@@ -263,7 +239,6 @@ function playerImageData(player, options = {}){
     };
   }
 
-  // 3. Exact full-name fallback only. No includes().
   if(allowNameFallback){
     const exact = findExactNameImage(playerName);
 
@@ -280,16 +255,16 @@ function playerImageData(player, options = {}){
 }
 
 function getPlayerImage(player){
-  const imageData = playerImageData(player, { allowNameFallback: true });
+  const imageData = playerImageData(player, { allowNameFallback:true });
   return player?.image_url || imageData?.img || "";
 }
 
 function getPlayerInitials(player){
-  const imageData = playerImageData(player, { allowNameFallback: true });
+  const imageData = playerImageData(player, { allowNameFallback:true });
   return imageData?.initials || initials(player?.player_name || player?.name || "");
 }
 
-function playerImgTag(player, className = ""){
+function playerImgTag(player){
   const name = player?.player_name || player?.name || "Jugador";
   const imageUrl = getPlayerImage(player);
   const fallbackInitials = getPlayerInitials(player);
@@ -297,7 +272,6 @@ function playerImgTag(player, className = ""){
   if(imageUrl){
     return `
       <img
-        class="${className}"
         src="${imageUrl}"
         alt="${name}"
         onerror="this.remove(); this.parentNode.textContent='${fallbackInitials}'"
@@ -323,7 +297,17 @@ function formatStat(value, decimals = 2){
     return String(Math.round(num));
   }
 
-  return num.toFixed(decimals).replace(/\.00$/, "");
+  const fixed = num.toFixed(decimals);
+
+  if(decimals === 2){
+    return fixed.replace(/\.00$/, "");
+  }
+
+  if(decimals === 1){
+    return fixed.replace(/\.0$/, "");
+  }
+
+  return fixed;
 }
 
 function getTeamBadge(teamId){
@@ -468,7 +452,7 @@ function getTopThree(players, field){
   return [...players]
     .filter(player => {
       const value = Number(player[field] || 0);
-      return !Number.isNaN(value);
+      return !Number.isNaN(value) && value > 0;
     })
     .sort((a, b) => {
       const av = Number(a[field] || 0);
@@ -483,51 +467,43 @@ function getTopThree(players, field){
 
 function buildLeaderCard(category, topThree){
   if(!topThree.length){
-    return `
-      <div class="leader-stat-card">
-        <div class="leader-card-head">
-          <div>
-            <div class="leader-card-title">${category.title}</div>
-            <div class="leader-card-subtitle">${category.subtitle}</div>
-          </div>
-        </div>
-        <div class="muted">Sin datos.</div>
-      </div>
-    `;
+    return "";
   }
 
   const leader = topThree[0];
   const runners = topThree.slice(1);
 
   return `
-    <div class="leader-stat-card">
+    <article class="leader-card">
       <div class="leader-card-head">
-        <div>
-          <div class="leader-card-title">${category.title}</div>
-          <div class="leader-card-subtitle">${category.subtitle}</div>
-        </div>
+        <h3 class="leader-card-title">${category.title}</h3>
+        <div class="leader-card-arrow">›</div>
       </div>
 
-      <div class="leader-top">
-        <div class="leader-top-left">
+      <div class="leader-main-row">
+        <div class="leader-player-left">
           <div class="leader-avatar">
             ${playerImgTag(leader)}
           </div>
 
-          <div class="leader-main-info">
+          <div>
             <div class="leader-name">${leader.player_name}</div>
             <div class="leader-meta">${leader.position || "-"} · ${leader.appearances || 0} partidos</div>
           </div>
         </div>
 
-        <div class="leader-value">${formatStat(leader[category.field], category.decimals)}</div>
+        <div class="leader-value ${leaderValueClass(category, leader[category.field])}">
+          ${formatStat(leader[category.field], category.decimals)}
+        </div>
       </div>
 
       <div class="runner-list">
-        ${runners.map((player, index) => `
+        ${runners.map((player) => `
           <div class="runner-row">
             <div class="runner-left">
-              <div class="runner-rank">${index + 2}</div>
+              <div class="runner-avatar">
+                ${playerImgTag(player)}
+              </div>
 
               <div>
                 <div class="runner-name">${player.player_name}</div>
@@ -535,12 +511,31 @@ function buildLeaderCard(category, topThree){
               </div>
             </div>
 
-            <div class="runner-value">${formatStat(player[category.field], category.decimals)}</div>
+            <div class="runner-value">
+              ${formatStat(player[category.field], category.decimals)}
+            </div>
           </div>
         `).join("")}
       </div>
-    </div>
+    </article>
   `;
+}
+
+function leaderValueClass(category, value){
+  const field = category?.field || "";
+  const num = Number(value || 0);
+
+  if(field === "avg_rating"){
+    if(num >= 7.0) return "good";
+    if(num >= 6.0) return "ok";
+    if(num > 0) return "bad";
+    return "neutral";
+  }
+
+  if(field === "yellow_cards") return "yellow-card";
+  if(field === "red_cards") return "red-card";
+
+  return "green-stat";
 }
 
 function renderLeaderCards(players){
@@ -550,14 +545,16 @@ function renderLeaderCards(players){
   container.innerHTML = "";
 
   if(!players.length){
-    container.innerHTML = `<div class="muted">No hay líderes disponibles.</div>`;
+    container.innerHTML = `<div class="muted">No hay estadísticas de jugadores todavía.</div>`;
     return;
   }
 
-  LEADER_CATEGORIES.forEach(category => {
-    const topThree = getTopThree(players, category.field);
-    container.insertAdjacentHTML("beforeend", buildLeaderCard(category, topThree));
-  });
+  const cards = LEADER_CATEGORIES
+    .map(category => buildLeaderCard(category, getTopThree(players, category.field)))
+    .filter(Boolean)
+    .join("");
+
+  container.innerHTML = cards || `<div class="muted">No hay líderes disponibles todavía.</div>`;
 }
 
 function populatePlayerSelect(players){
@@ -575,6 +572,24 @@ function populatePlayerSelect(players){
   });
 }
 
+function ratingClass(value){
+  const num = Number(value);
+
+  if(!Number.isFinite(num) || num <= 0){
+    return "neutral";
+  }
+
+  if(num >= 7.0){
+    return "good";
+  }
+
+  if(num >= 6.0){
+    return "ok";
+  }
+
+  return "bad";
+}
+
 function renderPlayerPreview(player){
   const container = document.getElementById("player-preview");
   if(!container) return;
@@ -588,21 +603,26 @@ function renderPlayerPreview(player){
     return;
   }
 
+  const rating = Number(player.avg_rating || 0);
+  const ratingDisplay = rating > 0 ? formatStat(rating, 2) : "-";
+
   container.innerHTML = `
     <div class="player-preview-card">
-      <div class="leader-top" style="margin-bottom:0;">
-        <div class="leader-top-left">
+      <div class="player-preview-main">
+        <div class="player-preview-left">
           <div class="leader-avatar">
             ${playerImgTag(player)}
           </div>
 
-          <div class="leader-main-info">
+          <div>
             <div class="leader-name">${player.player_name}</div>
             <div class="leader-meta">${player.position || "-"} · ${player.appearances || 0} partidos</div>
           </div>
         </div>
 
-        <div class="leader-value">${formatStat(player.avg_rating, 2)}</div>
+        <div class="player-rating-pill ${ratingClass(rating)}">
+          ${ratingDisplay}
+        </div>
       </div>
 
       <div class="player-preview-stats">
@@ -673,6 +693,11 @@ async function initEstadisticas(){
     wirePlayerLookup();
   } catch(err){
     console.error("Error cargando estadísticas:", err);
+
+    const leadersGrid = document.getElementById("leaders-grid");
+    if(leadersGrid){
+      leadersGrid.innerHTML = `<div class="muted">No se pudieron cargar las estadísticas.</div>`;
+    }
   }
 }
 
