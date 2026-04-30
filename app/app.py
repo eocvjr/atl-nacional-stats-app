@@ -670,42 +670,67 @@ def plantel_api():
     cur.execute("""
         SELECT
             player_name,
+            MAX(player_id) AS player_id,
             MAX(position) AS position,
+            MAX(shirt_number) AS shirt_number,
             COUNT(*) AS appearances,
             ROUND(AVG(rating), 2) AS avg_rating
         FROM lineups
         WHERE team_id = 6106
+          AND player_name IS NOT NULL
         GROUP BY player_name
-        ORDER BY appearances DESC, avg_rating DESC, player_name ASC
+        ORDER BY
+            CASE MAX(position)
+                WHEN 'POR' THEN 1
+                WHEN 'DEF' THEN 2
+                WHEN 'MED' THEN 3
+                WHEN 'DEL' THEN 4
+                ELSE 5
+            END,
+            appearances DESC,
+            avg_rating DESC,
+            player_name ASC
     """)
-    players = [dict(r) for r in cur.fetchall()]
 
+    players = [dict(r) for r in cur.fetchall()]
     conn.close()
 
     HEADSHOTS = {
         "David Ospina": "https://images.fotmob.com/image_resources/playerimages/50065.png",
         "Harlen Castillo": "https://images.fotmob.com/image_resources/playerimages/1435218.png",
+        "Kevin Cataño": "https://images.fotmob.com/image_resources/playerimages/1886618.png",
+        "Kevin Catano": "https://images.fotmob.com/image_resources/playerimages/1886618.png",
         "Kevin Castaño": "https://images.fotmob.com/image_resources/playerimages/1886618.png",
-    }
-
-    LAST_NAME_HEADSHOTS = {
-        "Ospina": "https://images.fotmob.com/image_resources/playerimages/50065.png",
-        "Castillo": "https://images.fotmob.com/image_resources/playerimages/1435218.png",
-        "Castaño": "https://images.fotmob.com/image_resources/playerimages/1886618.png",
-        "Cataño": "https://images.fotmob.com/image_resources/playerimages/1886618.png",
+        "Kevin Castano": "https://images.fotmob.com/image_resources/playerimages/1886618.png",
+        "Andrés Román": "https://images.fotmob.com/image_resources/playerimages/925847.png",
+        "Andres Roman": "https://images.fotmob.com/image_resources/playerimages/925847.png",
+        "Milton Casco": "https://images.fotmob.com/image_resources/playerimages/174813.png",
+        "César Haydar": "https://images.fotmob.com/image_resources/playerimages/1139171.png",
+        "Cesar Haydar": "https://images.fotmob.com/image_resources/playerimages/1139171.png",
+        "William Tesillo": "https://images.fotmob.com/image_resources/playerimages/207383.png",
+        "Wiliam Tesillo": "https://images.fotmob.com/image_resources/playerimages/207383.png",
+        "Samuel Velásquez": "https://images.fotmob.com/image_resources/playerimages/1433031.png",
+        "Samuel Velasquez": "https://images.fotmob.com/image_resources/playerimages/1433031.png",
+        "Juan Manuel Rengifo": "https://images.fotmob.com/image_resources/playerimages/1798773.png",
+        "Jorman Campuzano": "https://images.fotmob.com/image_resources/playerimages/922875.png",
+        "Edwin Cardona": "https://images.fotmob.com/image_resources/playerimages/177507.png",
+        "Andrés Sarmiento": "https://images.fotmob.com/image_resources/playerimages/942987.png",
+        "Andres Sarmiento": "https://images.fotmob.com/image_resources/playerimages/942987.png",
+        "Nicolás Rodríguez": "https://images.fotmob.com/image_resources/playerimages/1460577.png",
+        "Nicolas Rodriguez": "https://images.fotmob.com/image_resources/playerimages/1460577.png",
+        "Juan Zapata": "https://images.fotmob.com/image_resources/playerimages/1199834.png",
+        "Marlos Moreno": "https://images.fotmob.com/image_resources/playerimages/677249.png",
+        "Cristian Arango": "https://images.fotmob.com/image_resources/playerimages/452368.png",
+        "Eduard Bello": "https://images.fotmob.com/image_resources/playerimages/495825.png",
+        "Matías Lozano": "https://images.fotmob.com/image_resources/playerimages/1895028.png",
+        "Matias Lozano": "https://images.fotmob.com/image_resources/playerimages/1895028.png",
+        "Alfredo Morelos": "https://images.fotmob.com/image_resources/playerimages/579660.png",
+        "Dairon Asprilla": "https://images.fotmob.com/image_resources/playerimages/425783.png",
     }
 
     for player in players:
         name = player.get("player_name") or ""
-        image_url = HEADSHOTS.get(name)
-
-        if not image_url:
-            for last_name, url in LAST_NAME_HEADSHOTS.items():
-                if last_name.lower() in name.lower():
-                    image_url = url
-                    break
-
-        player["image_url"] = image_url
+        player["image_url"] = HEADSHOTS.get(name)
 
     return jsonify({"players": players})
 

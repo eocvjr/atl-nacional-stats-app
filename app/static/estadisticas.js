@@ -534,6 +534,9 @@ function leaderValueClass(category, value){
 
   if(field === "yellow_cards") return "yellow-card";
   if(field === "red_cards") return "red-card";
+  if(field === "big_chance_missed") return "bad";
+  if(field === "big_chances_missed") return "bad";
+  if(field === "dispossessed_per_match") return "bad"
 
   return "green-stat";
 }

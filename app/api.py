@@ -321,6 +321,17 @@ def flatten_table_rows(standings_groups):
 
     return flat_rows
 
+def get_flat_standings(tournament_id, season_id):
+    """
+    Fetch standings from the API and flatten them into simple rows.
+    Used by get_next_match() to show each team's league position.
+    """
+    standings_groups = get_table(tournament_id, season_id)
+
+    if not standings_groups:
+        return []
+
+    return flatten_table_rows(standings_groups)
 
 def fractional_to_decimal(odd_value):
     if odd_value is None:

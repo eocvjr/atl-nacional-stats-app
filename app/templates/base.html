@@ -1,0 +1,78 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+
+  <title>{% block title %}Verde Stats{% endblock %}</title>
+
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+
+  <link rel="stylesheet" href="{{ url_for('static', filename='app-shell.css') }}?v=2">
+
+  {% block extra_css %}{% endblock %}
+</head>
+
+<body>
+  <div class="app">
+    <aside class="sidebar">
+      <div class="brand">
+        <div class="brand-logo">
+          <img src="{{ url_for('static', filename='icons/atletico-nacional.png') }}" alt="Atlético Nacional">
+        </div>
+
+        <div>
+          <div>VERDE</div>
+          <div style="color:var(--accent);">STATS</div>
+        </div>
+      </div>
+
+      <nav class="nav">
+        <a href="/" class="{% if active_page == 'dashboard' %}active{% endif %}">
+          <span class="icon">🏠</span>
+          <span>Dashboard</span>
+        </a>
+
+        <a href="/calendario" class="{% if active_page == 'calendario' %}active{% endif %}">
+          <span class="icon">🗓️</span>
+          <span>Calendario</span>
+        </a>
+
+        <a href="/tabla" class="{% if active_page == 'tabla' %}active{% endif %}">
+          <span class="icon">📊</span>
+          <span>Tabla</span>
+        </a>
+
+        <a href="/estadisticas" class="{% if active_page == 'estadisticas' %}active{% endif %}">
+          <span class="icon">📈</span>
+          <span>Estadísticas</span>
+        </a>
+
+        <a href="/plantel" class="{% if active_page == 'plantel' %}active{% endif %}">
+          <span class="icon">👕</span>
+          <span>Plantel</span>
+        </a>
+      </nav>
+
+      <div class="sidebar-footer">
+        Atlético Nacional · 2026-I
+      </div>
+    </aside>
+
+    <main class="main">
+      <div class="topbar">
+        <div class="search">
+          <span class="search-icon">🔍</span>
+          <span>Buscador (trabajo en progreso)</span>
+        </div>
+
+        <div class="profile-pill">AN</div>
+      </div>
+
+      {% block content %}{% endblock %}
+    </main>
+  </div>
+
+  {% block extra_js %}{% endblock %}
+</body>
+</html>

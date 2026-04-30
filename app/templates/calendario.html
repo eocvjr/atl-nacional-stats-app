@@ -1,23 +1,19 @@
-<!doctype html>
-<html lang="es">
-<head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Calendario histórico - Atlético Nacional</title>
+{% extends "base.html" %}
+{% set active_page = "calendario" %}
 
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="{{ url_for('static', filename='calendario.css') }}">
-</head>
+{% block title %}Calendario · Verde Stats{% endblock %}
 
-<body>
-  <div class="page">
-    <a class="top-link" href="/">← Volver al dashboard</a>
+{% block extra_css %}
+  <link rel="stylesheet" href="{{ url_for('static', filename='calendario.css') }}?v=3">
+{% endblock %}
 
+{% block content %}
+  <div class="calendar-page">
     <header class="hero">
       <div>
         <div class="eyebrow">Atlético Nacional · 2026-I</div>
         <h1>Calendario</h1>
-        <p>Partidos Finalizados Liga BetPlay.</p>
+        <p>Partidos finalizados de Liga BetPlay.</p>
       </div>
 
       <div class="hero-badge">
@@ -70,7 +66,9 @@
       <div class="empty">No hay partidos disponibles.</div>
     {% endif %}
   </div>
+{% endblock %}
 
+{% block extra_js %}
   <script>
     const TEAM_BADGES = {
       "Atlético Nacional": "https://images.fotmob.com/image_resources/logo/teamlogo/6368.png",
@@ -116,5 +114,4 @@
       }
     });
   </script>
-</body>
-</html>
+{% endblock %}

@@ -1,382 +1,58 @@
-<!doctype html>
-<html lang="es">
-<head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Plantel - Atlético Nacional</title>
-  <style>
-    :root{
-      --bg:#050b09;
-      --card:linear-gradient(180deg, rgba(13,22,18,.96), rgba(5,10,8,.98));
-      --card-alt:linear-gradient(180deg, rgba(16,28,22,.96), rgba(7,12,10,.98));
-      --border:rgba(125,240,177,.12);
-      --border-strong:rgba(125,240,177,.22);
-      --text:#eefbf3;
-      --muted:#8fa59a;
-      --green:#00c26a;
-      --green-2:#7df0b1;
-      --shadow:0 20px 50px rgba(0,0,0,.38);
-    }
+{% extends "base.html" %}
+{% set active_page = "plantel" %}
 
-    *{ box-sizing:border-box; }
+{% block title %}Plantel · Verde Stats{% endblock %}
 
-    body{
-      margin:0;
-      font-family:Arial, sans-serif;
-      background:
-        radial-gradient(circle at top left, rgba(0,194,106,.12), transparent 24%),
-        linear-gradient(135deg, #04100b 0%, #05090b 45%, #020507 100%);
-      color:var(--text);
-      padding:28px;
-    }
+{% block extra_css %}
+  <link rel="stylesheet" href="{{ url_for('static', filename='plantel.css') }}?v=14">
+{% endblock %}
 
-    .container{
-      max-width:1450px;
-      margin:0 auto;
-    }
-
-    .top-link{
-      display:inline-block;
-      margin-bottom:18px;
-      color:var(--green-2);
-      text-decoration:none;
-      font-size:14px;
-    }
-
-    .hero{
-      display:flex;
-      justify-content:space-between;
-      align-items:flex-start;
-      gap:20px;
-      flex-wrap:wrap;
-      margin-bottom:24px;
-    }
-
-    .eyebrow{
-      font-size:12px;
-      letter-spacing:.22em;
-      text-transform:uppercase;
-      color:var(--muted);
-      margin-bottom:8px;
-    }
-
-    h1{
-      margin:0;
-      font-size:52px;
-      line-height:1.04;
-      font-weight:900;
-      letter-spacing:-.03em;
-    }
-
-    h1 span{ color:#d7f5e3; }
-
-    .subtitle{
-      margin-top:10px;
-      color:var(--muted);
-      font-size:18px;
-    }
-
-    .hero-right{
-      display:flex;
-      gap:14px;
-      flex-wrap:wrap;
-    }
-
-    .summary-box{
-      min-width:170px;
-      padding:18px 20px;
-      border-radius:22px;
-      background:var(--card);
-      border:1px solid var(--border);
-      box-shadow:var(--shadow);
-    }
-
-    .summary-value{
-      font-size:48px;
-      font-weight:900;
-      line-height:1;
-      margin-bottom:6px;
-      color:#f4fff8;
-    }
-
-    .summary-label{
-      font-size:12px;
-      text-transform:uppercase;
-      letter-spacing:.18em;
-      color:var(--muted);
-      font-weight:700;
-    }
-
-    .toolbar{
-      display:flex;
-      gap:14px;
-      align-items:center;
-      margin-bottom:28px;
-      flex-wrap:wrap;
-    }
-
-    .search{
-      flex:1;
-      min-width:280px;
-      display:flex;
-      align-items:center;
-      gap:10px;
-      padding:14px 16px;
-      border-radius:18px;
-      background:rgba(0,0,0,.45);
-      border:1px solid var(--border);
-      box-shadow:var(--shadow);
-    }
-
-    .search span{
-      color:var(--muted);
-      font-size:16px;
-    }
-
-    .search input{
-      flex:1;
-      background:transparent;
-      border:none;
-      outline:none;
-      color:var(--text);
-      font-size:15px;
-    }
-
-    .search input::placeholder{
-      color:#7f958b;
-    }
-
-    .content-card{
-      background:linear-gradient(180deg, rgba(7,14,11,.98), rgba(4,8,6,.98));
-      border:1px solid var(--border);
-      border-radius:28px;
-      padding:24px;
-      box-shadow:var(--shadow);
-    }
-
-    .group-block{ margin-bottom:36px; }
-    .group-block:last-child{ margin-bottom:0; }
-
-    .group-header{
-      display:flex;
-      align-items:center;
-      gap:12px;
-      margin-bottom:18px;
-      flex-wrap:wrap;
-    }
-
-    .group-title{
-      margin:0;
-      font-size:26px;
-      font-weight:900;
-      letter-spacing:.14em;
-      text-transform:uppercase;
-      color:#f3fbf6;
-    }
-
-    .group-count{
-      display:inline-flex;
-      align-items:center;
-      justify-content:center;
-      min-width:36px;
-      height:36px;
-      padding:0 12px;
-      border-radius:12px;
-      border:1px solid var(--border-strong);
-      background:rgba(255,255,255,.03);
-      color:#d9f7e5;
-      font-size:15px;
-      font-weight:800;
-    }
-
-    .group-grid{
-      display:grid;
-      grid-template-columns:repeat(4, minmax(0,1fr));
-      gap:18px;
-    }
-
-    .player-card{
-      min-height:250px;
-      padding:18px;
-      border-radius:24px;
-      background:
-        radial-gradient(circle at top center, rgba(0,194,106,.12), transparent 42%),
-        var(--card-alt);
-      border:1px solid rgba(125,240,177,.10);
-      box-shadow:0 14px 36px rgba(0,0,0,.34);
-      transition:transform .18s ease, border-color .18s ease, box-shadow .18s ease;
-    }
-
-    .player-card:hover{
-      transform:translateY(-4px);
-      border-color:rgba(125,240,177,.22);
-      box-shadow:0 22px 42px rgba(0,0,0,.44);
-    }
-
-    .player-top{
-      display:flex;
-      justify-content:space-between;
-      align-items:flex-start;
-      gap:12px;
-      margin-bottom:16px;
-    }
-
-    .player-avatar{
-      width:72px;
-      height:72px;
-      border-radius:50%;
-      display:flex;
-      align-items:center;
-      justify-content:center;
-      overflow:hidden;
-      background:linear-gradient(180deg, #1ce38b, #029653);
-      color:#04100b;
-      font-size:26px;
-      font-weight:900;
-      box-shadow:0 10px 24px rgba(0,194,106,.22);
-      flex-shrink:0;
-    }
-
-    .player-avatar img{
-      width:100%;
-      height:100%;
-      object-fit:cover;
-      display:block;
-    }
-
-    .position-badge{
-      padding:8px 12px;
-      border-radius:12px;
-      background:rgba(255,255,255,.05);
-      border:1px solid rgba(125,240,177,.14);
-      color:#d4fbe2;
-      font-size:12px;
-      font-weight:800;
-      letter-spacing:.08em;
-      text-transform:uppercase;
-      white-space:nowrap;
-    }
-
-    .player-main{ margin-top:8px; }
-
-    .player-name{
-      font-size:28px;
-      font-weight:900;
-      line-height:1.08;
-      margin-bottom:8px;
-      color:#f4fff8;
-      letter-spacing:-.02em;
-    }
-
-    .player-sub{
-      color:var(--muted);
-      font-size:13px;
-      text-transform:uppercase;
-      letter-spacing:.18em;
-      font-weight:700;
-      margin-bottom:16px;
-    }
-
-    .player-divider{
-      height:1px;
-      background:linear-gradient(90deg, rgba(125,240,177,.16), rgba(125,240,177,.04));
-      margin:16px 0;
-    }
-
-    .stats-row{
-      display:grid;
-      grid-template-columns:repeat(2, minmax(0,1fr));
-      gap:12px;
-    }
-
-    .stat{
-      padding:12px;
-      border-radius:16px;
-      background:rgba(255,255,255,.03);
-      border:1px solid rgba(125,240,177,.08);
-    }
-
-    .stat-value{
-      font-size:28px;
-      font-weight:900;
-      color:#f5fff9;
-      line-height:1;
-      margin-bottom:6px;
-    }
-
-    .stat-label{
-      font-size:11px;
-      color:var(--muted);
-      text-transform:uppercase;
-      letter-spacing:.14em;
-      font-weight:700;
-    }
-
-    .empty{
-      display:none;
-      padding:20px 4px 4px;
-      color:var(--muted);
-      font-size:16px;
-    }
-
-    @media (max-width: 1250px){
-      .group-grid{ grid-template-columns:repeat(3, minmax(0,1fr)); }
-    }
-
-    @media (max-width: 950px){
-      body{ padding:20px; }
-      h1{ font-size:40px; }
-      .summary-value{ font-size:38px; }
-      .group-grid{ grid-template-columns:repeat(2, minmax(0,1fr)); }
-    }
-
-    @media (max-width: 640px){
-      body{ padding:16px; }
-      h1{ font-size:32px; }
-      .hero-right{ width:100%; }
-      .summary-box{ flex:1; }
-      .group-grid{ grid-template-columns:1fr; }
-      .player-name{ font-size:24px; }
-    }
-  </style>
-</head>
-<body>
-  <div class="container">
-    <a class="top-link" href="/">← Volver al dashboard</a>
-
-    <div class="hero">
-      <div>
-        <div class="eyebrow">Atlético Nacional • Plantel</div>
-        <h1><span>Primer equipo</span></h1>
-        <div class="subtitle">Temporada 2026-1</div>
+{% block content %}
+  <main class="plantel-page">
+    <section class="plantel-hero">
+      <div class="hero-left">
+        <div class="eyebrow">Atlético Nacional · Plantel</div>
+        <h1>Primer Equipo</h1>
+        <p>Temporada 2026-1</p>
       </div>
 
-      <div class="hero-right">
-        <div class="summary-box">
+      <div class="hero-stats">
+        <article class="summary-box">
           <div class="summary-value" id="total-players">0</div>
           <div class="summary-label">Jugadores</div>
-        </div>
+        </article>
 
-        <div class="summary-box">
+        <article class="summary-box">
           <div class="summary-value" id="avg-rating">-</div>
           <div class="summary-label">Rating promedio</div>
-        </div>
+        </article>
       </div>
-    </div>
+    </section>
 
-    <div class="toolbar">
-      <div class="search">
+    <section class="toolbar-card">
+      <div class="search plantel-search">
         <span>🔎</span>
-        <input type="text" id="player-search" placeholder="Buscar jugador..." />
+        <input
+          type="text"
+          id="player-search"
+          placeholder="Buscar jugador..."
+          autocomplete="off"
+        />
       </div>
-    </div>
 
-    <div class="content-card">
+      <div class="position-filters" id="position-filters"></div>
+    </section>
+
+    <section class="content-card">
       <div id="players-groups"></div>
-      <div id="empty-state" class="empty">No se encontraron jugadores.</div>
-    </div>
-  </div>
 
-  <script src="/static/plantel.js"></script>
-</body>
-</html>
+      <div id="empty-state" class="empty">
+        No se encontraron jugadores.
+      </div>
+    </section>
+  </main>
+{% endblock %}
+
+{% block extra_js %}
+  <script src="{{ url_for('static', filename='plantel.js') }}?v=14"></script>
+{% endblock %}

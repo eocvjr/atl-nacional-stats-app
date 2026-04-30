@@ -1,18 +1,14 @@
-<!doctype html>
-<html lang="es">
-<head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Estadísticas - Atlético Nacional</title>
+{% extends "base.html" %}
+{% set active_page = "estadisticas" %}
 
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700;800;900&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="{{ url_for('static', filename='estadisticas.css') }}?v=32">
-</head>
+{% block title %}Estadísticas · Verde Stats{% endblock %}
 
-<body>
+{% block extra_css %}
+  <link rel="stylesheet" href="{{ url_for('static', filename='estadisticas.css') }}?v=37">
+{% endblock %}
+
+{% block content %}
   <div class="stats-page">
-    <a class="top-link" href="/">← Volver al dashboard</a>
-
     <header class="stats-header">
       <div>
         <div class="page-kicker">TEMPORADA 2026-I</div>
@@ -94,7 +90,6 @@
           <div id="recent-form" class="recent-form"></div>
         </div>
 
-        <!-- Hidden compatibility IDs for current JS -->
         <span id="team-rating" hidden>-</span>
         <span id="team-wins" hidden>-</span>
         <span id="sum-gd" hidden>-</span>
@@ -120,7 +115,7 @@
 
           <div id="player-preview" class="player-preview">
             <div class="player-preview-empty">
-              Seleccioná un jugador para ver su resumen.
+              Selecciona un jugador para ver su resumen.
             </div>
           </div>
         </div>
@@ -129,14 +124,15 @@
 
     <section class="leaders-section">
       <div class="section-heading">
-        <h2>Top stats</h2>
-        <p>Líderes del plantel por categoría.</p>
+        <h2>Lideres del Equipo</h2>
+        <p></p>
       </div>
 
       <div id="leaders-grid" class="leaders-grid"></div>
     </section>
   </div>
+{% endblock %}
 
-  <script src="{{ url_for('static', filename='estadisticas.js') }}?v=32"></script>
-</body>
-</html>
+{% block extra_js %}
+  <script src="{{ url_for('static', filename='estadisticas.js') }}?v=35"></script>
+{% endblock %}

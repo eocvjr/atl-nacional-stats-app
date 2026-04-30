@@ -1,47 +1,24 @@
 :root{
-  --bg:#050b11;
-  --panel:#071119;
-  --muted:#9aa3af;
-  --text:#e6eef6;
-  --accent:#00c26a;
-  --accent-2:#4dffab;
-  --accent-soft:rgba(0,194,106,0.16);
-  --border:rgba(255,255,255,0.06);
-  --shadow:0 16px 40px rgba(0,0,0,0.78);
-  --radius:20px;
+  --calendar-muted:#9aa3af;
+  --calendar-text:#e6eef6;
+  --calendar-accent:#00c26a;
+  --calendar-border:rgba(255,255,255,0.06);
+  --calendar-shadow:0 16px 40px rgba(0,0,0,0.55);
 }
 
-*{
-  box-sizing:border-box;
-}
+/* IMPORTANT:
+   body/html/app/sidebar/topbar are handled by app-shell.css now.
+   This file only styles the calendar content inside the shared layout.
+*/
 
-body{
+.calendar-page{
+  width:100%;
   margin:0;
-  min-height:100vh;
-  font-family:Inter,system-ui,Arial,sans-serif;
-  background:radial-gradient(circle at top left,#07301b,#050b11 50%,#020509 100%);
-  color:var(--text);
-}
-
-.page{
-  max-width:1480px;
-  margin:0 auto;
-  padding:34px;
+  padding:0;
 }
 
 .top-link{
-  display:inline-flex;
-  align-items:center;
-  gap:8px;
-  margin-bottom:22px;
-  color:#7df0b1;
-  text-decoration:none;
-  font-size:14px;
-  font-weight:700;
-}
-
-.top-link:hover{
-  color:#fff;
+  display:none;
 }
 
 .hero{
@@ -53,7 +30,7 @@ body{
 }
 
 .eyebrow{
-  color:var(--muted);
+  color:var(--calendar-muted);
   font-size:12px;
   font-weight:800;
   letter-spacing:.14em;
@@ -61,12 +38,13 @@ body{
   margin-bottom:10px;
 }
 
-h1{
+.hero h1{
   margin:0;
   font-size:54px;
   line-height:.98;
   font-weight:900;
   letter-spacing:-.04em;
+  color:var(--calendar-text);
 }
 
 .hero p{
@@ -80,8 +58,8 @@ h1{
   padding:18px 20px;
   border-radius:20px;
   background:linear-gradient(180deg,rgba(255,255,255,0.03),rgba(0,0,0,0.65));
-  border:1px solid var(--border);
-  box-shadow:var(--shadow);
+  border:1px solid var(--calendar-border);
+  box-shadow:var(--calendar-shadow);
   text-align:right;
 }
 
@@ -96,7 +74,7 @@ h1{
 .hero-badge small{
   display:block;
   margin-top:6px;
-  color:var(--muted);
+  color:var(--calendar-muted);
   font-size:11px;
   font-weight:800;
   letter-spacing:.12em;
@@ -119,9 +97,11 @@ h1{
   min-height:176px;
   padding:18px;
   border-radius:22px;
-  background:linear-gradient(180deg,rgba(255,255,255,0.025),rgba(0,0,0,0.72));
-  border:1px solid var(--border);
-  box-shadow:var(--shadow);
+  background:
+    radial-gradient(circle at top left,rgba(0,194,106,0.08),transparent 38%),
+    linear-gradient(180deg,rgba(255,255,255,0.025),rgba(0,0,0,0.72));
+  border:1px solid var(--calendar-border);
+  box-shadow:var(--calendar-shadow);
   transition:transform .16s ease, border-color .16s ease, background .16s ease;
   cursor:pointer;
 }
@@ -152,7 +132,7 @@ h1{
 }
 
 .date{
-  color:var(--muted);
+  color:var(--calendar-muted);
   font-size:13px;
   font-weight:600;
 }
@@ -256,7 +236,7 @@ h1{
 }
 
 .vs{
-  color:var(--muted);
+  color:var(--calendar-muted);
   font-size:10px;
   font-weight:900;
   letter-spacing:.18em;
@@ -266,22 +246,18 @@ h1{
   padding:28px;
   border-radius:22px;
   background:linear-gradient(180deg,rgba(255,255,255,0.025),rgba(0,0,0,0.72));
-  border:1px solid var(--border);
-  color:var(--muted);
+  border:1px solid var(--calendar-border);
+  color:var(--calendar-muted);
   font-size:15px;
 }
 
 @media(max-width:980px){
-  .page{
-    padding:20px;
-  }
-
   .hero{
     align-items:flex-start;
     flex-direction:column;
   }
 
-  h1{
+  .hero h1{
     font-size:42px;
   }
 
@@ -315,11 +291,7 @@ h1{
 }
 
 @media(max-width:560px){
-  .page{
-    padding:16px;
-  }
-
-  h1{
+  .hero h1{
     font-size:34px;
   }
 
@@ -330,4 +302,29 @@ h1{
   .match-top{
     flex-direction:column;
   }
+
+  /* Integrated with dashboard shell */
+.calendar-page{
+  width:100%;
+  margin:0;
+  padding:0;
+}
+
+.hero{
+  margin-top:8px;
+}
+
+.hero h1{
+  font-size:48px;
+}
+
+.match-card{
+  box-shadow:0 16px 40px rgba(0,0,0,0.55);
+}
+
+@media(max-width:980px){
+  .hero h1{
+    font-size:40px;
+  }
+}
 }
